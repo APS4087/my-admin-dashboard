@@ -19,7 +19,9 @@ export interface CreateShipAuthData {
   is_active?: boolean;
 }
 
-export interface UpdateShipAuthData extends Partial<CreateShipAuthData> {}
+export interface UpdateShipAuthData extends Partial<CreateShipAuthData> {
+  id?: string;
+}
 
 export interface ShipAuthFilters {
   is_active?: boolean;
