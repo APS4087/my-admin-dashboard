@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { users } from "@/data/users";
+import { getAuthenticatedUser } from "@/lib/auth-utils";
 import { cn } from "@/lib/utils";
 import { getPreference } from "@/server/server-actions";
 import {
@@ -26,10 +26,11 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
-  const [sidebarVariant, sidebarCollapsible, contentLayout] = await Promise.all([
+  const [sidebarVariant, sidebarCollapsible, contentLayout, authData] = await Promise.all([
     getPreference<SidebarVariant>("sidebar_variant", SIDEBAR_VARIANT_VALUES, "inset"),
     getPreference<SidebarCollapsible>("sidebar_collapsible", SIDEBAR_COLLAPSIBLE_VALUES, "icon"),
     getPreference<ContentLayout>("content_layout", CONTENT_LAYOUT_VALUES, "centered"),
+    getAuthenticatedUser(),
   ]);
 
   const layoutPreferences = {
@@ -38,9 +39,20 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
     collapsible: sidebarCollapsible,
   };
 
+  // Create user object for components
+  const user = authData
+    ? {
+        id: authData.user.id,
+        name: authData.profile?.full_name || authData.user.email?.split("@")[0] || "User",
+        email: authData.user.email || "",
+        avatar: authData.profile?.avatar_url || "",
+        role: authData.profile?.role || "user",
+      }
+    : null;
+
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
-      <AppSidebar variant={sidebarVariant} collapsible={sidebarCollapsible} />
+      <AppSidebar variant={sidebarVariant} collapsible={sidebarCollapsible} user={user || undefined} />
       <SidebarInset
         data-content-layout={contentLayout}
         className={cn(
@@ -60,7 +72,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
             <div className="flex items-center gap-2">
               <LayoutControls {...layoutPreferences} />
               <ThemeSwitcher />
-              <AccountSwitcher users={users} />
+              {user && <AccountSwitcher users={[user]} />}
             </div>
           </div>
         </header>

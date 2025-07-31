@@ -1,7 +1,7 @@
 "use client";
 import * as React from "react";
 
-import { LayoutDashboard, ChartBar, Gauge, ShoppingBag, GraduationCap, Forklift, Search } from "lucide-react";
+import { LayoutDashboard, Users, Building, BarChart3, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +15,10 @@ import {
 } from "@/components/ui/command";
 
 const searchItems = [
-  { group: "Dashboards", icon: LayoutDashboard, label: "Default" },
-  { group: "Dashboards", icon: ChartBar, label: "CRM", disabled: true },
-  { group: "Dashboards", icon: Gauge, label: "Analytics", disabled: true },
-  { group: "Dashboards", icon: ShoppingBag, label: "E-Commerce", disabled: true },
-  { group: "Dashboards", icon: GraduationCap, label: "Academy", disabled: true },
-  { group: "Dashboards", icon: Forklift, label: "Logistics", disabled: true },
+  { group: "Dashboards", icon: LayoutDashboard, label: "Overview" },
+  { group: "Employees", icon: Users, label: "Employee Directory" },
+  { group: "Employees", icon: Building, label: "Departments" },
+  { group: "Reports", icon: BarChart3, label: "Analytics", disabled: true },
   { group: "Authentication", label: "Login v1" },
   { group: "Authentication", label: "Login v2" },
   { group: "Authentication", label: "Register v1" },

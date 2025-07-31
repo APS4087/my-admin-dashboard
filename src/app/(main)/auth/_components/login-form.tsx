@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -10,6 +11,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import { useAuth } from "@/contexts/auth-context";
+
 const FormSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
@@ -17,6 +20,9 @@ const FormSchema = z.object({
 });
 
 export function LoginForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuth();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -27,13 +33,27 @@ export function LoginForm() {
   });
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    toast("You submitted the following values", {
-      description: (
-        <pre className="mt-2 w-[320px] rounded-md bg-neutral-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    setIsLoading(true);
+
+    try {
+      const { error } = await signIn(data.email, data.password);
+
+      if (error) {
+        toast.error("Authentication failed", {
+          description: error.message ?? "Please check your credentials and try again.",
+        });
+      } else {
+        toast.success("Welcome back!", {
+          description: "You have successfully signed in.",
+        });
+      }
+    } catch {
+      toast.error("An unexpected error occurred", {
+        description: "Please try again later.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -90,8 +110,8 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button className="w-full" type="submit">
-          Login
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isLoading ? "Signing in..." : "Login"}
         </Button>
       </form>
     </Form>

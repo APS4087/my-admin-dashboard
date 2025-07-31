@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Leaflet CSS for maps */
+@import "leaflet/dist/leaflet.css";
+
 /* Theme preset styles: these override CSS variables based on the selected data-theme-preset */
 @import "../styles/presets/brutalist.css";
 @import "../styles/presets/soft-pop.css";
@@ -69,7 +72,7 @@ These serve as the fallback; there is no separate default.css file. */
   --chart-1: oklch(0.3211 0 0);
   --chart-2: oklch(0.4495 0 0);
   --chart-3: oklch(0.5693 0 0);
-  --chart-4: oklch(0.6830 0 0);
+  --chart-4: oklch(0.683 0 0);
   --chart-5: oklch(0.7921 0 0);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);

@@ -55,22 +55,17 @@ I’ve taken design inspiration from various sources. Feel free to open an issue
 
 ### Dashboards
 - ✅ Default
-- ✅ CRM
-- ✅ Finance
+- ✅ Employee Management
 - 🚧 Analytics
-- 🚧 eCommerce
-- 🚧 Academy
-- 🚧 Logistics
+- 🚧 Reports
 
-### Pages
-- 🚧 Email
-- 🚧 Chat
-- 🚧 Calendar
-- 🚧 Kanban
-- 🚧 Invoice
-- 🚧 Users
-- 🚧 Roles
-- ✅ Authentication (4 screens)
+### Features
+- ✅ Employee Directory
+- ✅ Employee CRUD Operations  
+- ✅ Department Management
+- ✅ Authentication (Login/Register)
+- 🚧 Employee Reports
+- 🚧 Department Analytics
 
 ## Colocation File System Architecture
 
