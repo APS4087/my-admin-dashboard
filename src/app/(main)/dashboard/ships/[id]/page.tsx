@@ -27,6 +27,7 @@ import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { VesselFinderMap } from "@/components/vessel-finder-map";
 
 // Dynamically import the map component to avoid SSR issues
 const ShipMap = dynamic(() => import("@/components/ship-map").then(mod => ({ default: mod.ShipMap })), {
@@ -108,18 +109,88 @@ export default function ShipDetailsPage() {
           return;
         }
         setShip(shipData);
+        console.log("Ship data fetched:", shipData);
         
         // Fetch ship location using tracking service
-        const locationData = await shipTrackingService.getShipLocation(shipData.ship_email);
-        setLocation(locationData);
-        
-        // Fetch ship image using tracking service
-        const imageData = await shipTrackingService.getShipImage(shipData.ship_email);
-        setShipImage(imageData);
-        
-        // Fetch additional ship details
-        const detailsData = await shipTrackingService.getShipDetails(shipData.ship_email);
-        setShipDetails(detailsData);
+        if (shipData.vesselfinder_url) {
+          console.log("Using VesselFinder URL:", shipData.vesselfinder_url);
+          
+          // Make a single API call to get all vessel data
+          const response = await fetch("/api/scrape-vessel-detail", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: shipData.vesselfinder_url }),
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.data) {
+              const vesselData = result.data;
+              console.log("Scraped vessel data:", vesselData);
+              
+              // Set location data
+              if (vesselData.location) {
+                setLocation({
+                  latitude: vesselData.location.latitude,
+                  longitude: vesselData.location.longitude,
+                  speed: vesselData.location.speed,
+                  course: vesselData.location.course,
+                  status: vesselData.location.status,
+                  port: vesselData.location.port,
+                  destination: vesselData.location.destination,
+                  lastUpdate: vesselData.lastUpdate,
+                  mmsi: vesselData.mmsi,
+                  imo: vesselData.imo
+                });
+              }
+              
+              // Set image data
+              if (vesselData.image) {
+                setShipImage({
+                  url: vesselData.image,
+                  source: "VesselFinder",
+                  timestamp: vesselData.lastUpdate,
+                });
+              }
+              
+              // Set ship details
+              setShipDetails({
+                name: vesselData.name,
+                type: vesselData.type,
+                flag: vesselData.flag,
+                imo: vesselData.imo,
+                length: vesselData.length,
+                width: vesselData.width,
+                deadweight: vesselData.deadweight,
+                yearBuilt: vesselData.yearBuilt,
+              });
+            }
+          } else {
+            console.error("Failed to fetch vessel data:", response.status);
+          }
+        } else {
+          console.log("No VesselFinder URL, using email-based tracking for:", shipData.ship_email);
+          // Fallback to email-based tracking if no VesselFinder URL
+          const locationData = await shipTrackingService.getShipLocation(
+            shipData.ship_email
+          );
+          console.log("Email-based location data:", locationData);
+          setLocation(locationData);
+          
+          const imageData = await shipTrackingService.getShipImage(
+            shipData.ship_email
+          );
+          console.log("Email-based image data:", imageData);
+          setShipImage(imageData);
+          
+          const detailsData = await shipTrackingService.getShipDetails(
+            shipData.ship_email
+          );
+          console.log("Email-based details data:", detailsData);
+          setShipDetails(detailsData);
+        }
         
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load ship details");
@@ -213,10 +284,10 @@ export default function ShipDetailsPage() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <ShipIcon className="h-5 w-5 mr-2" />
-              Ship Information
+              Authentication
             </CardTitle>
             <CardDescription>
-              Authentication credentials and basic information
+              Login credentials and vessel registry
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -236,18 +307,6 @@ export default function ShipDetailsPage() {
                     <label className="text-sm font-medium text-muted-foreground">Flag</label>
                     <p className="text-sm">{shipDetails.flag}</p>
                   </div>
-                  {shipDetails.length && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Length</label>
-                      <p className="text-sm">{shipDetails.length}m</p>
-                    </div>
-                  )}
-                  {shipDetails.yearBuilt && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Year Built</label>
-                      <p className="text-sm">{shipDetails.yearBuilt}</p>
-                    </div>
-                  )}
                 </div>
                 
                 <Separator />
@@ -317,13 +376,13 @@ export default function ShipDetailsPage() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <ShipIcon className="h-5 w-5 mr-2" />
-              Ship Image
+              Vessel Image
             </CardTitle>
             <CardDescription>
-              Latest satellite or aerial view of the vessel
+              Photo and specifications
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-4">
             {shipImage ? (
               <div className="space-y-3">
                 <div className="relative aspect-video w-full overflow-hidden rounded-lg">
@@ -339,7 +398,41 @@ export default function ShipDetailsPage() {
                     }}
                   />
                 </div>
-                <div className="text-sm text-muted-foreground">
+                
+                {/* Vessel Specifications */}
+                {shipDetails && (
+                  <div className="border-t pt-3 space-y-2">
+                    <h4 className="font-medium text-sm text-muted-foreground">Quick Specs</h4>
+                    <div className="grid grid-cols-3 gap-3 text-xs">
+                      {shipDetails.length && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{shipDetails.length}m</div>
+                          <div className="text-muted-foreground">Length</div>
+                        </div>
+                      )}
+                      {shipDetails.width && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{shipDetails.width}m</div>
+                          <div className="text-muted-foreground">Beam</div>
+                        </div>
+                      )}
+                      {shipDetails.deadweight && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{(shipDetails.deadweight / 1000).toFixed(1)}k</div>
+                          <div className="text-muted-foreground">DWT (t)</div>
+                        </div>
+                      )}
+                      {shipDetails.yearBuilt && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{shipDetails.yearBuilt}</div>
+                          <div className="text-muted-foreground">Built</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="text-xs text-muted-foreground space-y-1 border-t pt-2">
                   <p>Source: {shipImage.source}</p>
                   {shipImage.caption && <p>{shipImage.caption}</p>}
                   {shipImage.timestamp && (
@@ -348,65 +441,75 @@ export default function ShipDetailsPage() {
                 </div>
               </div>
             ) : (
-              <div className="aspect-video w-full flex items-center justify-center bg-muted rounded-lg">
-                <div className="text-center text-muted-foreground">
-                  <ShipIcon className="mx-auto h-12 w-12 mb-2 opacity-50" />
-                  <p className="font-medium">No image available</p>
-                  <p className="text-xs">Image loading failed or not found</p>
+              <div className="space-y-3">
+                <div className="aspect-video w-full flex items-center justify-center bg-muted rounded-lg">
+                  <div className="text-center text-muted-foreground">
+                    <ShipIcon className="mx-auto h-12 w-12 mb-2 opacity-50" />
+                    <p className="font-medium">No image available</p>
+                    <p className="text-xs">Image loading failed or not found</p>
+                  </div>
                 </div>
+                
+                {/* Vessel Specifications even when no image */}
+                {shipDetails && (
+                  <div className="border-t pt-3 space-y-2">
+                    <h4 className="font-medium text-sm text-muted-foreground">Quick Specs</h4>
+                    <div className="grid grid-cols-3 gap-3 text-xs">
+                      {shipDetails.length && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{shipDetails.length}m</div>
+                          <div className="text-muted-foreground">Length</div>
+                        </div>
+                      )}
+                      {shipDetails.width && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{shipDetails.width}m</div>
+                          <div className="text-muted-foreground">Beam</div>
+                        </div>
+                      )}
+                      {shipDetails.deadweight && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{(shipDetails.deadweight / 1000).toFixed(1)}k</div>
+                          <div className="text-muted-foreground">DWT (t)</div>
+                        </div>
+                      )}
+                      {shipDetails.yearBuilt && (
+                        <div className="text-center">
+                          <div className="font-semibold text-lg">{shipDetails.yearBuilt}</div>
+                          <div className="text-muted-foreground">Built</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Location Tracking Card */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <MapPin className="h-5 w-5 mr-2" />
-              Location & Tracking
-            </CardTitle>
-            <CardDescription>
-              Real-time position and navigation data with interactive map
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {location ? (
+        {/* VesselFinder Map Card */}
+        <div className="lg:col-span-2">
+          <VesselFinderMap 
+            imo={shipDetails?.imo || location?.imo}
+            mmsi={location?.mmsi}
+            vesselName={shipDetails?.name || ship.ship_email.split('@')[0]}
+          />
+        </div>
+
+        {/* Location Data Card */}
+        {location && (
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Navigation className="h-5 w-5 mr-2" />
+                Live Tracking
+              </CardTitle>
+              <CardDescription>
+                Current position and navigation status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="space-y-6">
-                {/* Interactive Map */}
-                <div className="rounded-lg overflow-hidden border">
-                  <ShipMap 
-                    location={location} 
-                    shipEmail={ship.ship_email}
-                    className="w-full"
-                  />
-                </div>
-                
-                {/* Position and Tracking Numbers */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">Position</div>
-                    <p className="text-lg font-mono">
-                      {location.latitude.toFixed(6)}°
-                    </p>
-                    <p className="text-lg font-mono">
-                      {location.longitude.toFixed(6)}°
-                    </p>
-                  </div>
-                  {location.mmsi && (
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-muted-foreground mb-1">MMSI</div>
-                      <p className="text-lg font-mono">{location.mmsi}</p>
-                    </div>
-                  )}
-                  {location.imo && (
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-muted-foreground mb-1">IMO</div>
-                      <p className="text-lg font-mono">{location.imo}</p>
-                    </div>
-                  )}
-                </div>
-                
                 {/* Navigation Data */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="space-y-2">
@@ -458,15 +561,9 @@ export default function ShipDetailsPage() {
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <MapPin className="mx-auto h-12 w-12 mb-2 opacity-50" />
-                <p>Location data unavailable</p>
-                <p className="text-sm">GPS tracking may be disabled or signal lost</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

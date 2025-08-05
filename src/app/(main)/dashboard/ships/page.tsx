@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger, 
 } from "@/components/ui/dropdown-menu";
-import { shipService } from "@/lib/ship-service";
+import { shipService, type ShipWithTracking } from "@/lib/ship-service";
 import { shipTrackingService, type ShipLocation } from "@/lib/ship-tracking-service";
 import type { Ship } from "@/types/ship";
 import Link from "next/link";
@@ -29,7 +29,7 @@ import Image from "next/image";
 
 export default function ShipsPage() {
   const [ships, setShips] = useState<Ship[]>([]);
-  const [shipsWithTracking, setShipsWithTracking] = useState<Array<Ship & { location?: ShipLocation; imageUrl?: string; shipName?: string }>>([]);
+  const [shipsWithTracking, setShipsWithTracking] = useState<ShipWithTracking[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -37,63 +37,80 @@ export default function ShipsPage() {
   // Debounce search to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // Memoized fetch function to prevent unnecessary re-renders
+  // Optimized fetch function using the new service method
   const fetchShips = useCallback(async (search?: string) => {
     try {
       setError(null);
-      let data = await shipService.getAllShips({
+      
+      // First, ensure existing ships have VesselFinder URLs
+      await shipService.ensureShipsHaveVesselFinderUrls();
+      
+      // Use the optimized service method that fetches ships and tracking data efficiently
+      const shipsWithTrackingData = await shipService.getAllShipsWithTracking({
         search: search || undefined,
       });
       
       // If no ships exist, create mock ships for demonstration
-      if (data.length === 0) {
+      if (shipsWithTrackingData.length === 0) {
         const mockShips = createMockShipsIfEmpty();
-        data = mockShips;
         setShips(mockShips);
-      } else {
-        setShips(data);
-      }
-      
-      // Fetch tracking data for each ship using their VesselFinder URL
-      const shipsWithTrackingData = await Promise.all(
-        data.map(async (ship) => {
-          try {
-            // Only fetch tracking data if the ship has a VesselFinder URL
-            if (ship.vesselfinder_url) {
-              const [location, image, details] = await Promise.all([
-                shipTrackingService.getShipLocationFromURL(ship.vesselfinder_url),
-                shipTrackingService.getShipImageFromURL(ship.vesselfinder_url),
-                shipTrackingService.getShipDetailsFromURL(ship.vesselfinder_url)
-              ]);
-              
-              return {
-                ...ship,
-                location: location || undefined,
-                imageUrl: image?.url,
-                shipName: details?.name || ship.ship_email.split('@')[0].toUpperCase()
-              };
-            } else {
-              // Ship has no VesselFinder URL, return without tracking data
+        
+        // Fetch tracking data for mock ships
+        const mockShipsWithTracking = await Promise.allSettled(
+          mockShips.map(async (ship) => {
+            try {
+              if (ship.vesselfinder_url) {
+                const trackingData = await shipTrackingService.getAllShipDataFromURL(ship.vesselfinder_url);
+                return {
+                  ...ship,
+                  location: trackingData.location || undefined,
+                  imageUrl: trackingData.image?.url,
+                  shipName: trackingData.details?.name || ship.ship_email.split('@')[0].toUpperCase(),
+                  trackingDetails: trackingData.details || undefined,
+                };
+              } else {
+                return {
+                  ...ship,
+                  location: undefined,
+                  imageUrl: undefined,
+                  shipName: ship.ship_email.split('@')[0].toUpperCase(),
+                  trackingDetails: undefined,
+                };
+              }
+            } catch (error) {
+              console.error(`Error fetching tracking data for mock ship ${ship.ship_email}:`, error);
               return {
                 ...ship,
                 location: undefined,
                 imageUrl: undefined,
-                shipName: ship.ship_email.split('@')[0].toUpperCase()
+                shipName: ship.ship_email.split('@')[0].toUpperCase(),
+                trackingDetails: undefined,
               };
             }
-          } catch (error) {
-            console.error(`Error fetching tracking data for ship ${ship.ship_email}:`, error);
+          })
+        );
+        
+        const resolvedMockShips = mockShipsWithTracking.map((result, index) => {
+          if (result.status === 'fulfilled') {
+            return result.value;
+          } else {
             return {
-              ...ship,
+              ...mockShips[index],
               location: undefined,
               imageUrl: undefined,
-              shipName: ship.ship_email.split('@')[0].toUpperCase()
+              shipName: mockShips[index].ship_email.split('@')[0].toUpperCase(),
+              trackingDetails: undefined,
             };
           }
-        })
-      );
+        });
+        
+        setShipsWithTracking(resolvedMockShips);
+      } else {
+        // Set both ships and shipsWithTracking for consistency
+        setShips(shipsWithTrackingData);
+        setShipsWithTracking(shipsWithTrackingData);
+      }
       
-      setShipsWithTracking(shipsWithTrackingData);
     } catch (error) {
       console.error("Failed to fetch ships:", error);
       setError("Failed to load ship data. Please try again.");
@@ -106,16 +123,16 @@ export default function ShipsPage() {
   const createMockShipsIfEmpty = (): Ship[] => {
     const mockShipData = [
       {
-        email: "captain.anderson@oceanfreight.com",
+        email: "hyemerald01@gmail.com",
         url: "https://www.vesselfinder.com/vessels/details/9676307" // HY EMERALD
       },
       {
-        email: "skipper.martinez@globalmarine.com",
-        url: "https://www.vesselfinder.com/vessels/details/9234567"
+        email: "hypartner02@gmail.com",
+        url: "https://www.vesselfinder.com/vessels/details/9234567" // Sample vessel
       },
       {
-        email: "commander.chen@pacificships.com",
-        url: "https://www.vesselfinder.com/vessels/details/9345678"
+        email: "hychampion03@gmail.com",
+        url: "https://www.vesselfinder.com/vessels/details/9345678" // Sample vessel
       },
       {
         email: "captain.johnson@atlanticlines.com",

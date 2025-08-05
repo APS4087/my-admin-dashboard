@@ -26,8 +26,11 @@ interface TestVesselData {
 
 export default function VesselScrapingTest() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [vesselfinderUrl, setVesselfinderUrl] = useState("https://www.vesselfinder.com/vessels/details/9676307");
   const [results, setResults] = useState<TestVesselData[]>([]);
+  const [urlResult, setUrlResult] = useState<TestVesselData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [urlLoading, setUrlLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async () => {
@@ -54,6 +57,40 @@ export default function VesselScrapingTest() {
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUrlTest = async () => {
+    if (!vesselfinderUrl.trim()) return;
+
+    setUrlLoading(true);
+    setError(null);
+    setUrlResult(null);
+
+    try {
+      const response = await fetch('/api/test-scraping', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: vesselfinderUrl }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success && result.result?.data) {
+        setUrlResult(result.result.data);
+      } else {
+        setError(result.error || 'Failed to scrape VesselFinder data');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+    } finally {
+      setUrlLoading(false);
     }
   };
 
@@ -99,6 +136,103 @@ export default function VesselScrapingTest() {
           {error && (
             <div className="text-red-600 text-sm">
               Error: {error}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Test VesselFinder URL Scraping</CardTitle>
+          <CardDescription>
+            Test scraping vessel data directly from a VesselFinder.com URL
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex space-x-2">
+            <div className="relative flex-1">
+              <Input
+                placeholder="VesselFinder URL (e.g., https://www.vesselfinder.com/vessels/details/9676307)"
+                value={vesselfinderUrl}
+                onChange={(e) => setVesselfinderUrl(e.target.value)}
+                className="pr-2"
+              />
+            </div>
+            <Button onClick={handleUrlTest} disabled={urlLoading || !vesselfinderUrl.trim()}>
+              {urlLoading ? "Scraping..." : "Test URL"}
+            </Button>
+          </div>
+
+          {error && (
+            <div className="text-red-600 text-sm">
+              Error: {error}
+            </div>
+          )}
+
+          {urlResult && (
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold mb-3">Scraped Data from VesselFinder</h3>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <ShipIcon className="h-5 w-5 text-blue-500" />
+                        <span className="font-semibold text-lg">{urlResult.name || 'Unknown Vessel'}</span>
+                      </div>
+                      
+                      <div className="space-y-1 text-sm">
+                        {urlResult.mmsi && (
+                          <div><span className="font-medium">MMSI:</span> {urlResult.mmsi}</div>
+                        )}
+                        {urlResult.imo && (
+                          <div><span className="font-medium">IMO:</span> {urlResult.imo}</div>
+                        )}
+                        {urlResult.type && (
+                          <div><span className="font-medium">Type:</span> {urlResult.type}</div>
+                        )}
+                        {urlResult.flag && (
+                          <div><span className="font-medium">Flag:</span> {urlResult.flag}</div>
+                        )}
+                      </div>
+                    </div>
+
+                    {urlResult.location && (
+                      <div className="space-y-2">
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="h-5 w-5 text-green-500" />
+                          <span className="font-semibold">Location</span>
+                        </div>
+                        
+                        <div className="space-y-1 text-sm">
+                          <div>
+                            <span className="font-medium">Coordinates:</span>{" "}
+                            {urlResult.location.latitude.toFixed(4)}°, {urlResult.location.longitude.toFixed(4)}°
+                          </div>
+                          {urlResult.location.port && (
+                            <div><span className="font-medium">Port:</span> {urlResult.location.port}</div>
+                          )}
+                          {urlResult.location.destination && (
+                            <div><span className="font-medium">Destination:</span> {urlResult.location.destination}</div>
+                          )}
+                          <div className="flex items-center space-x-4">
+                            <span><span className="font-medium">Speed:</span> {urlResult.location.speed} knots</span>
+                            <span><span className="font-medium">Course:</span> {urlResult.location.course}°</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {urlResult.location.status === "Underway" && (
+                              <Navigation className="h-4 w-4 text-blue-500" />
+                            )}
+                            <Badge variant={urlResult.location.status === "Underway" ? "default" : "secondary"}>
+                              {urlResult.location.status}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           )}
         </CardContent>

@@ -25,6 +25,12 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'static.vesselfinder.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'api.vesselfinder.com',
         port: '',
         pathname: '/**',

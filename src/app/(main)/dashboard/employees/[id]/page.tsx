@@ -240,29 +240,6 @@ export default function EmployeeDetailPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Security Information */}
-          {employee.current_email_password && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Key className="mr-2 h-5 w-5" />
-                  Security Information
-                </CardTitle>
-                <CardDescription>
-                  Stored email credentials (handle with care)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Current Email Password</label>
-                  <p className="text-base font-mono bg-muted px-2 py-1 rounded text-sm">
-                    {employee.current_email_password}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Right Column - Status & Metadata */}
