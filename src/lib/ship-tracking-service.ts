@@ -29,6 +29,7 @@ export interface ShipDetails {
   name?: string;
   type?: string;
   flag?: string;
+  imo?: string;
   length?: number;
   width?: number;
   deadweight?: number;
@@ -36,6 +37,91 @@ export interface ShipDetails {
 }
 
 export class ShipTrackingService {
+  // Enhanced cache with better TTL management
+  private cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  private readonly DEFAULT_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  private readonly ERROR_CACHE_DURATION = 2 * 60 * 1000; // 2 minutes for errors
+  private readonly SUCCESS_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes for successful responses
+
+  /**
+   * Check if cache entry is valid
+   */
+  private isCacheValid(key: string): boolean {
+    const entry = this.cache.get(key);
+    if (!entry) return false;
+    
+    return Date.now() - entry.timestamp < entry.ttl;
+  }
+
+  /**
+   * Set cache with dynamic TTL
+   */
+  private setCache(key: string, data: any, isError: boolean = false): void {
+    const ttl = isError ? this.ERROR_CACHE_DURATION : this.SUCCESS_CACHE_DURATION;
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    });
+
+    // Clean up old entries periodically
+    if (this.cache.size > 100) {
+      this.cleanupCache();
+    }
+  }
+
+  /**
+   * Clean up expired cache entries
+   */
+  private cleanupCache(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > entry.ttl) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  /**
+   * Get all ship data (location, image, details) from VesselFinder URL in one call
+   */
+  async getAllShipDataFromURL(vesselfinderUrl: string): Promise<{
+    location: ShipLocation | null;
+    image: ShipImage | null;
+    details: ShipDetails | null;
+  }> {
+    try {
+      const scrapedData = await this.fetchFromVesselFinderURL(vesselfinderUrl);
+      
+      if (!scrapedData) {
+        return { location: null, image: null, details: null };
+      }
+
+      const location = this.convertToShipLocation(scrapedData);
+      const image = scrapedData.image ? {
+        url: scrapedData.image,
+        source: "VesselFinder",
+        timestamp: new Date().toISOString(),
+      } : null;
+      
+      const details = {
+        name: scrapedData.name,
+        type: scrapedData.type,
+        flag: scrapedData.flag,
+        imo: scrapedData.imo,
+        length: scrapedData.length,
+        width: scrapedData.width,
+        deadweight: scrapedData.deadweight,
+        yearBuilt: scrapedData.yearBuilt,
+      };
+
+      return { location, image, details };
+    } catch (error) {
+      console.error("Error fetching all ship data from URL:", error);
+      return { location: null, image: null, details: null };
+    }
+  }
+
   /**
    * Get ship location directly from VesselFinder URL
    */
@@ -207,10 +293,18 @@ export class ShipTrackingService {
   }
 
   /**
-   * Fetch data from specific VesselFinder URL
+   * Fetch data from specific VesselFinder URL with caching
    */
   private async fetchFromVesselFinderURL(url: string): Promise<any | null> {
     try {
+      // Check cache first
+      if (this.isCacheValid(url)) {
+        const cachedData = this.cache.get(url);
+        console.log(`Using cached data for ${url}`);
+        return cachedData!.data;
+      }
+
+      console.log(`Fetching fresh data for ${url}`);
       const response = await fetch("/api/scrape-vessel-detail", {
         method: "POST",
         headers: {
@@ -226,12 +320,18 @@ export class ShipTrackingService {
       const result = await response.json();
 
       if (result.success && result.data) {
+        // Cache the successful result
+        this.setCache(url, result.data, false);
         return result.data;
       }
 
+      // Cache null result as error
+      this.setCache(url, null, true);
       return null;
     } catch (error) {
       console.error("Error fetching from VesselFinder URL:", error);
+      // Cache error result
+      this.setCache(url, null, true);
       return null;
     }
   }

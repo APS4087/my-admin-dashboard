@@ -316,7 +316,7 @@ export default function ShipAuthPage() {
                               {linkedShip && (
                                 <Badge variant="outline" className="flex items-center gap-1">
                                   <Anchor className="h-3 w-3" />
-                                  {linkedShip.ship_name}
+                                  {linkedShip.ship_email.split('@')[0].toUpperCase()}
                                 </Badge>
                               )}
                             </div>
@@ -372,7 +372,7 @@ export default function ShipAuthPage() {
                                 <option value="">Link to Ship</option>
                                 {ships.filter(ship => !shipAuths.some(a => a.ship_id === ship.id)).map(ship => (
                                   <option key={ship.id} value={ship.id}>
-                                    {ship.ship_name}
+                                    {ship.ship_email.split('@')[0].toUpperCase()}
                                   </option>
                                 ))}
                               </select>

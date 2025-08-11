@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, Eye, Ship as ShipIcon, MapPin, Navigation, Anchor } from "lucide-react";
+import { Plus, Search, RefreshCw, Ship as ShipIcon, BarChart3, ExternalLink } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -14,108 +15,90 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger, 
-} from "@/components/ui/dropdown-menu";
+import { optimizedShipService } from "@/lib/optimized-ship-service";
 import { shipService } from "@/lib/ship-service";
-import { shipTrackingService, type ShipLocation } from "@/lib/ship-tracking-service";
+import { ShipRow } from "@/components/ship-row";
+import { PerformanceDashboard } from "@/components/performance-dashboard";
 import type { Ship } from "@/types/ship";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/use-debounce";
-import Image from "next/image";
 
 export default function ShipsPage() {
+  const router = useRouter();
   const [ships, setShips] = useState<Ship[]>([]);
-  const [shipsWithTracking, setShipsWithTracking] = useState<Array<Ship & { location?: ShipLocation; imageUrl?: string; shipName?: string }>>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showPerformanceDashboard, setShowPerformanceDashboard] = useState(false);
+  const [mounted, setMounted] = useState(false);
   
   // Debounce search to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  // Memoized fetch function to prevent unnecessary re-renders
-  const fetchShips = useCallback(async (search?: string) => {
+  // Track when component first mounts
+  useEffect(() => {
+    setMounted(true);
+    console.log('Ships page mounted');
+    return () => {
+      console.log('Ships page unmounted');
+    };
+  }, []);
+
+  // Fast initial load - get ships without tracking data first
+  const loadShipsBasic = useCallback(async (search?: string, forceRefresh = false) => {
     try {
+      console.log('loadShipsBasic called', { search, forceRefresh, initialLoading, loading });
       setError(null);
-      let data = await shipService.getAllShips({
+      
+      // Only show loading for the first time or explicit refresh
+      if (forceRefresh || initialLoading) {
+        setLoading(true);
+      }
+      
+      // First, ensure existing ships have VesselFinder URLs
+      await shipService.ensureShipsHaveVesselFinderUrls();
+      
+      // Get basic ship data quickly
+      const basicShips = await optimizedShipService.getShipsBasic({
         search: search || undefined,
       });
       
+      console.log('Ships loaded:', basicShips.length);
+      
       // If no ships exist, create mock ships for demonstration
-      if (data.length === 0) {
+      if (basicShips.length === 0) {
         const mockShips = createMockShipsIfEmpty();
-        data = mockShips;
         setShips(mockShips);
       } else {
-        setShips(data);
+        setShips(basicShips);
       }
       
-      // Fetch tracking data for each ship using their VesselFinder URL
-      const shipsWithTrackingData = await Promise.all(
-        data.map(async (ship) => {
-          try {
-            // Only fetch tracking data if the ship has a VesselFinder URL
-            if (ship.vesselfinder_url) {
-              const [location, image, details] = await Promise.all([
-                shipTrackingService.getShipLocationFromURL(ship.vesselfinder_url),
-                shipTrackingService.getShipImageFromURL(ship.vesselfinder_url),
-                shipTrackingService.getShipDetailsFromURL(ship.vesselfinder_url)
-              ]);
-              
-              return {
-                ...ship,
-                location: location || undefined,
-                imageUrl: image?.url,
-                shipName: details?.name || ship.ship_email.split('@')[0].toUpperCase()
-              };
-            } else {
-              // Ship has no VesselFinder URL, return without tracking data
-              return {
-                ...ship,
-                location: undefined,
-                imageUrl: undefined,
-                shipName: ship.ship_email.split('@')[0].toUpperCase()
-              };
-            }
-          } catch (error) {
-            console.error(`Error fetching tracking data for ship ${ship.ship_email}:`, error);
-            return {
-              ...ship,
-              location: undefined,
-              imageUrl: undefined,
-              shipName: ship.ship_email.split('@')[0].toUpperCase()
-            };
-          }
-        })
-      );
-      
-      setShipsWithTracking(shipsWithTrackingData);
     } catch (error) {
       console.error("Failed to fetch ships:", error);
       setError("Failed to load ship data. Please try again.");
     } finally {
+      setInitialLoading(false);
       setLoading(false);
+      console.log('loadShipsBasic completed');
     }
-  }, []);
+  }, [initialLoading]);
 
   // Create mock ships if database is empty
   const createMockShipsIfEmpty = (): Ship[] => {
     const mockShipData = [
       {
-        email: "captain.anderson@oceanfreight.com",
+        email: "hyemerald01@gmail.com",
         url: "https://www.vesselfinder.com/vessels/details/9676307" // HY EMERALD
       },
       {
-        email: "skipper.martinez@globalmarine.com",
-        url: "https://www.vesselfinder.com/vessels/details/9234567"
+        email: "hypartner02@gmail.com",
+        url: "https://www.vesselfinder.com/vessels/details/9234567" // Sample vessel
       },
       {
-        email: "commander.chen@pacificships.com",
-        url: "https://www.vesselfinder.com/vessels/details/9345678"
+        email: "hychampion03@gmail.com",
+        url: "https://www.vesselfinder.com/vessels/details/9345678" // Sample vessel
       },
       {
         email: "captain.johnson@atlanticlines.com",
@@ -141,16 +124,19 @@ export default function ShipsPage() {
 
   // Initial load
   useEffect(() => {
-    fetchShips();
-  }, [fetchShips]);
+    // Reset loading states when component mounts/remounts
+    if (initialLoading && mounted) {
+      console.log('Triggering initial load');
+      loadShipsBasic();
+    }
+  }, [loadShipsBasic, initialLoading, mounted]);
 
   // Search effect with debounced term
   useEffect(() => {
-    if (debouncedSearchTerm !== undefined) {
-      setLoading(true);
-      fetchShips(debouncedSearchTerm);
+    if (debouncedSearchTerm !== undefined && !initialLoading) {
+      loadShipsBasic(debouncedSearchTerm, false);
     }
-  }, [debouncedSearchTerm, fetchShips]);
+  }, [debouncedSearchTerm, loadShipsBasic, initialLoading]);
 
   const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this ship?")) {
@@ -158,23 +144,32 @@ export default function ShipsPage() {
         await shipService.deleteShip(id);
         // Optimistic update - remove from local state immediately
         setShips(ships.filter(ship => ship.id !== id));
-        setShipsWithTracking(shipsWithTracking.filter(ship => ship.id !== id));
+        // Clear cache for deleted ship
+        optimizedShipService.clearShipCache(id);
       } catch (error) {
         console.error("Failed to delete ship:", error);
         setError("Failed to delete ship. Please try again.");
         // Refetch to ensure data consistency
-        fetchShips(debouncedSearchTerm);
+        loadShipsBasic(debouncedSearchTerm, true);
       }
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // Clear cache to force fresh data
+    optimizedShipService.clearAllCache();
+    await loadShipsBasic(debouncedSearchTerm, true);
+    setRefreshing(false);
   };
 
   // Show error state
   if (error && !loading) {
     return (
-      <div className="p-6">
+      <div className="space-y-6">
         <div className="text-center py-8">
           <div className="text-red-600 mb-4">{error}</div>
-          <Button onClick={() => fetchShips(debouncedSearchTerm)}>
+          <Button onClick={() => loadShipsBasic(debouncedSearchTerm, true)}>
             Try Again
           </Button>
         </div>
@@ -182,75 +177,56 @@ export default function ShipsPage() {
     );
   }
 
-  if (loading) {
+  if (initialLoading) {
     return (
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold">Ship Tracking</h1>
             <p className="text-muted-foreground">
               Monitor ship locations and track maritime vessels in real-time
             </p>
           </div>
-          <Link href="/dashboard/ships/add">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Ship
+          <div className="flex gap-2">
+            <Link href="/dashboard/ships/add">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Ship
+              </Button>
+            </Link>
+            <Button 
+              variant="outline"
+              asChild
+            >
+              <a 
+                href="https://www.vesselfinder.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                <ShipIcon className="mr-2 h-4 w-4" />
+                VesselFinder
+                <ExternalLink className="ml-1 h-3 w-3" />
+              </a>
             </Button>
-          </Link>
+          </div>
         </div>
 
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <CardTitle>Ship Fleet</CardTitle>
                 <CardDescription>
-                  Real-time tracking and monitoring of maritime vessels
+                  Loading ship data...
                 </CardDescription>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search by ship name or email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8 w-[300px]"
-                  />
-                </div>
-                <Button variant="outline" size="sm">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ship Email</TableHead>
-                  <TableHead>Password</TableHead>
-                  <TableHead>App Password</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[...Array(3)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
-                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div></TableCell>
-                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse w-32"></div></TableCell>
-                    <TableCell><div className="h-6 bg-gray-200 rounded animate-pulse w-16"></div></TableCell>
-                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div></TableCell>
-                    <TableCell><div className="h-8 bg-gray-200 rounded animate-pulse w-8 ml-auto"></div></TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-2 text-muted-foreground">Loading ships...</span>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -258,183 +234,133 @@ export default function ShipsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Ship Tracking</h1>
           <p className="text-muted-foreground">
             Monitor ship locations and track maritime vessels in real-time
           </p>
         </div>
-        <Link href="/dashboard/ships/add">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Ship
+        <div className="flex gap-2">
+          <Link href="/dashboard/ships/add">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Ship
+            </Button>
+          </Link>
+          <Button 
+            variant="outline"
+            asChild
+          >
+            <a 
+              href="https://www.vesselfinder.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <ShipIcon className="mr-2 h-4 w-4" />
+              VesselFinder
+            </a>
           </Button>
-        </Link>
+        </div>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <CardTitle>Ship Fleet</CardTitle>
               <CardDescription>
-                URL-based tracking using individual VesselFinder pages for accurate data
+                Real-time tracking with progressive loading for optimal performance
               </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by email..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-[300px]"
+                  className="pl-8 w-full sm:w-[300px] lg:w-[350px] xl:w-[400px]"
+                  disabled={loading}
                 />
               </div>
-              <Button variant="outline" size="sm">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
-              <Link href="/dashboard/ships/manage-urls">
-                <Button variant="outline" size="sm">
-                  Manage URLs
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                >
+                  <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  {refreshing ? 'Refreshing...' : 'Refresh'}
                 </Button>
-              </Link>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setShowPerformanceDashboard(true)}
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Performance
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Ship</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Speed</TableHead>
-                <TableHead>Last Update</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {shipsWithTracking.length === 0 ? (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    <div className="text-muted-foreground">
-                      <ShipIcon className="mx-auto h-12 w-12 mb-4 text-muted-foreground/50" />
-                      No ships found.{" "}
-                      <Link href="/dashboard/ships/add">
-                        <Button variant="link" className="p-0">
-                          Add your first ship
-                        </Button>
-                      </Link>
-                    </div>
-                  </TableCell>
+                  <TableHead className="min-w-[200px]">Ship</TableHead>
+                  <TableHead className="min-w-[180px]">Location</TableHead>
+                  <TableHead className="min-w-[100px]">Speed</TableHead>
+                  <TableHead className="min-w-[150px]">Last Update</TableHead>
+                  <TableHead className="text-right min-w-[80px]">Actions</TableHead>
                 </TableRow>
-              ) : (
-                shipsWithTracking.map((ship) => (
-                  <TableRow key={ship.id}>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        {ship.imageUrl && (
-                          <div className="h-10 w-16 relative rounded overflow-hidden">
-                            <Image
-                              src={ship.imageUrl}
-                              alt={ship.shipName || "Ship"}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        )}
-                        <div>
-                          <div className="font-medium">
-                            {ship.shipName || ship.ship_email.split('@')[0]}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {ship.ship_email}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {ship.location ? (
-                        <div className="flex items-center space-x-1">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">
-                            {ship.location.port || `${ship.location.latitude.toFixed(4)}°, ${ship.location.longitude.toFixed(4)}°`}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground">Unknown</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        {ship.location?.status === "Underway" && (
-                          <Navigation className="h-4 w-4 text-blue-500" />
-                        )}
-                        {ship.location?.status === "At anchor" && (
-                          <Anchor className="h-4 w-4 text-yellow-500" />
-                        )}
-                        {ship.location?.status === "Moored" && (
-                          <ShipIcon className="h-4 w-4 text-green-500" />
-                        )}
-                        <Badge
-                          variant={ship.is_active ? "default" : "secondary"}
-                        >
-                          {ship.location?.status || (ship.is_active ? "Active" : "Inactive")}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {ship.location ? (
-                        <span>{ship.location.speed.toFixed(1)} knots</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {ship.location?.lastUpdate 
-                        ? new Date(ship.location.lastUpdate).toLocaleString()
-                        : new Date(ship.updated_at).toLocaleDateString()
-                      }
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
+              </TableHeader>
+              <TableBody>
+                {ships.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <div className="text-muted-foreground">
+                        <ShipIcon className="mx-auto h-12 w-12 mb-4 text-muted-foreground/50" />
+                        No ships found.{" "}
+                        <Link href="/dashboard/ships/add">
+                          <Button variant="link" className="p-0">
+                            Add your first ship
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/ships/${ship.id}`}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              View Details
-                            </Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDelete(ship.id)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        </Link>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  ships.map((ship, index) => (
+                    <ShipRow
+                      key={ship.id}
+                      ship={ship}
+                      onDelete={handleDelete}
+                      index={index}
+                    />
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          
+          {loading && ships.length > 0 && (
+            <div className="flex items-center justify-center py-4 border-t">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span className="ml-2 text-sm text-muted-foreground">Updating...</span>
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      <PerformanceDashboard
+        isOpen={showPerformanceDashboard}
+        onClose={() => setShowPerformanceDashboard(false)}
+      />
     </div>
   );
 }

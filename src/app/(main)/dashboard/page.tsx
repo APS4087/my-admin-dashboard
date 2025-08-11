@@ -18,9 +18,8 @@ export default function DashboardPage() {
 
   const [shipStats, setShipStats] = useState({
     total: 0,
-    operational: 0,
-    maintenance: 0,
-    docked: 0
+    active: 0,
+    inactive: 0
   });
 
   const [shipAuthStats, setShipAuthStats] = useState({
@@ -55,8 +54,8 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 md:gap-6">
           {[...Array(8)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
@@ -71,8 +70,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Fleet & Crew Management Dashboard</h1>
           <p className="text-muted-foreground">
@@ -87,7 +86,7 @@ export default function DashboardPage() {
           <Users className="h-5 w-5" />
           Employee Statistics
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6">
           <StatsCard
             title="Total Employees"
             icon={<Users className="h-4 w-4" />}
@@ -125,7 +124,7 @@ export default function DashboardPage() {
           <Ship className="h-5 w-5" />
           Fleet Statistics
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6">
           <StatsCard
             title="Total Ships"
             icon={<Ship className="h-4 w-4" />}
@@ -134,25 +133,25 @@ export default function DashboardPage() {
             color="default"
           />
           <StatsCard
-            title="Operational Ships"
+            title="Active Ships"
             icon={<Anchor className="h-4 w-4" />}
-            value={shipStats.operational}
-            description="Currently operational"
+            value={shipStats.active}
+            description="Currently active"
             color="success"
           />
           <StatsCard
-            title="In Maintenance"
+            title="Inactive Ships"
             icon={<Wrench className="h-4 w-4" />}
-            value={shipStats.maintenance}
-            description="Under maintenance"
-            color="warning"
+            value={shipStats.inactive}
+            description="Currently inactive"
+            color="secondary"
           />
           <StatsCard
-            title="Docked Ships"
+            title="Fleet Status"
             icon={<Ship className="h-4 w-4" />}
-            value={shipStats.docked}
-            description="Currently docked"
-            color="secondary"
+            value={shipStats.total > 0 ? Math.round((shipStats.active / shipStats.total) * 100) : 0}
+            description="Active percentage"
+            color="default"
           />
         </div>
       </div>
@@ -163,7 +162,7 @@ export default function DashboardPage() {
           <Key className="h-5 w-5" />
           Ship Authentication Statistics
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6">
           <StatsCard
             title="Total Accounts"
             icon={<Key className="h-4 w-4" />}
@@ -195,7 +194,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions - Employees</CardTitle>
@@ -203,20 +202,20 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded"
+              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
               onClick={() => window.location.href = '/dashboard/employees/add'}
             >
               <span>Add New Employee</span>
               <Badge variant="outline">+ Add</Badge>
             </div>
             <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded"
+              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
               onClick={() => window.location.href = '/dashboard/employees'}
             >
               <span>View All Employees</span>
               <Badge variant="outline">View</Badge>
             </div>
-            <div className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded">
+            <div className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors">
               <span>Department Overview</span>
               <Badge variant="outline">Analyze</Badge>
             </div>
@@ -230,21 +229,21 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded"
+              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
               onClick={() => window.location.href = '/dashboard/ships/add'}
             >
               <span>Add New Ship</span>
               <Badge variant="outline">+ Add</Badge>
             </div>
             <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded"
+              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
               onClick={() => window.location.href = '/dashboard/ships'}
             >
               <span>View Fleet Directory</span>
               <Badge variant="outline">View</Badge>
             </div>
             <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded"
+              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
               onClick={() => window.location.href = '/dashboard/ships/auth'}
             >
               <span>Ship Authentication</span>
@@ -252,32 +251,32 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>System Status</CardTitle>
-          <CardDescription>Current system information</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <span>Database Status</span>
-            <Badge variant="default" className="bg-green-100 text-green-800">
-              Connected
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Authentication</span>
-            <Badge variant="default" className="bg-green-100 text-green-800">
-              Active
-            </Badge>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Last Sync</span>
-            <Badge variant="outline">Just now</Badge>
-          </div>
-        </CardContent>
-      </Card>
+        <Card className="lg:col-span-2 xl:col-span-1">
+          <CardHeader>
+            <CardTitle>System Status</CardTitle>
+            <CardDescription>Current system information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span>Database Status</span>
+              <Badge variant="default" className="bg-green-100 text-green-800">
+                Connected
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Authentication</span>
+              <Badge variant="default" className="bg-green-100 text-green-800">
+                Active
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Last Sync</span>
+              <Badge variant="outline">Just now</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

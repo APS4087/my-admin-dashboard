@@ -6,30 +6,46 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
+import Link from "next/link";
 import { 
   ArrowLeft, 
   Edit, 
   Trash2, 
-  MapPin, 
-  Calendar, 
-  User, 
-  Ship as ShipIcon,
   Eye,
   EyeOff,
+  RefreshCw,
+  BarChart3,
+  Ship as ShipIcon,
+  MapPin,
   Navigation,
   Anchor,
-  Signal
+  Signal,
+  Calendar,
+  User
 } from "lucide-react";
-import { ShipService } from "@/lib/ship-service";
-import { shipTrackingService, type ShipLocation, type ShipImage, type ShipDetails } from "@/lib/ship-tracking-service";
+import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
+import { shipService } from "@/lib/ship-service";
+import { LocationCard } from "@/components/ship-detail/location-card";
+import { DetailsCard } from "@/components/ship-detail/details-card";
+import { ImageCard } from "@/components/ship-detail/image-card";
+import { PerformanceDashboard } from "@/components/performance-dashboard";
 import type { Ship } from "@/types/ship";
-import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
-import Image from "next/image";
+import type { ShipLocation, ShipDetails } from "@/lib/ship-tracking-service";
 import dynamic from "next/dynamic";
 
 // Dynamically import the map component to avoid SSR issues
 const ShipMap = dynamic(() => import("@/components/ship-map").then(mod => ({ default: mod.ShipMap })), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[400px] w-full bg-muted rounded-lg flex items-center justify-center">
+      <div className="text-muted-foreground">Loading map...</div>
+    </div>
+  )
+});
+
+const VesselFinderMap = dynamic(() => import("@/components/vessel-finder-map").then(mod => ({ default: mod.VesselFinderMap })), {
   ssr: false,
   loading: () => (
     <div className="h-[400px] w-full bg-muted rounded-lg flex items-center justify-center">
@@ -54,25 +70,18 @@ function ShipDetailsSkeleton() {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-1/2" />
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-64 w-full" />
-          </CardContent>
-        </Card>
+        {[...Array(4)].map((_, i) => (
+          <Card key={i}>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
@@ -84,14 +93,11 @@ export default function ShipDetailsPage() {
   const shipId = params?.id as string;
   
   const [ship, setShip] = useState<Ship | null>(null);
-  const [location, setLocation] = useState<ShipLocation | null>(null);
-  const [shipImage, setShipImage] = useState<ShipImage | null>(null);
-  const [shipDetails, setShipDetails] = useState<ShipDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPasswords, setShowPasswords] = useState(false);
-  
-  const shipService = new ShipService();
+  const [showPerformanceDashboard, setShowPerformanceDashboard] = useState(false);
 
   useEffect(() => {
     const fetchShipData = async () => {
@@ -101,25 +107,19 @@ export default function ShipDetailsPage() {
         setLoading(true);
         setError(null);
         
-        // Fetch ship details
-        const shipData = await shipService.getShipById(shipId);
-        if (!shipData) {
+        // Use optimized service for fast initial load
+        const { basicData } = await optimizedShipDetailService.getOptimizedShipDetail(shipId);
+        
+        if (!basicData) {
           setError("Ship not found");
           return;
         }
-        setShip(shipData);
         
-        // Fetch ship location using tracking service
-        const locationData = await shipTrackingService.getShipLocation(shipData.ship_email);
-        setLocation(locationData);
+        setShip(basicData);
+        console.log("Ship basic data loaded:", basicData);
         
-        // Fetch ship image using tracking service
-        const imageData = await shipTrackingService.getShipImage(shipData.ship_email);
-        setShipImage(imageData);
-        
-        // Fetch additional ship details
-        const detailsData = await shipTrackingService.getShipDetails(shipData.ship_email);
-        setShipDetails(detailsData);
+        // Preload tracking data in background
+        optimizedShipDetailService.preloadTrackingData(basicData);
         
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load ship details");
@@ -135,15 +135,34 @@ export default function ShipDetailsPage() {
   const handleDelete = async () => {
     if (!ship) return;
     
-    if (confirm("Are you sure you want to delete this ship? This action cannot be undone.")) {
+    if (confirm("Are you sure you want to delete this ship?")) {
       try {
         await shipService.deleteShip(ship.id);
+        // Clear cache
+        optimizedShipDetailService.clearShipCache(ship.id);
         router.push("/dashboard/ships");
       } catch (error) {
         console.error("Failed to delete ship:", error);
         setError("Failed to delete ship. Please try again.");
       }
     }
+  };
+
+  const handleRefresh = async () => {
+    if (!ship) return;
+    
+    setRefreshing(true);
+    // Clear cache to force fresh data
+    optimizedShipDetailService.clearShipCache(ship.id);
+    
+    // Reload tracking data
+    try {
+      await optimizedShipDetailService.loadTrackingData(ship);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
+    
+    setRefreshing(false);
   };
 
   if (loading) {
@@ -186,6 +205,23 @@ export default function ShipDetailsPage() {
                 Back to Ships
               </Button>
             </Link>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              disabled={refreshing}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowPerformanceDashboard(!showPerformanceDashboard)}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              {showPerformanceDashboard ? 'Hide' : 'Show'} Performance
+            </Button>
           </div>
           <h1 className="text-3xl font-bold">Ship Details</h1>
           <p className="text-muted-foreground">
@@ -206,54 +242,37 @@ export default function ShipDetailsPage() {
         </div>
       </div>
 
-      {/* Main Content Grid */}
+      {/* Performance Dashboard (Optional) */}
+      {showPerformanceDashboard && (
+        <PerformanceDashboard 
+          isOpen={showPerformanceDashboard}
+          onClose={() => setShowPerformanceDashboard(false)}
+        />
+      )}
+
+      {/* Main Content Grid - Progressive Loading Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Ship Information Card */}
+        {/* Location Card - Loads first */}
+        <LocationCard ship={ship} />
+        
+        {/* Details Card - Loads in background */}
+        <DetailsCard ship={ship} />
+        
+        {/* Image Card - Loads last (heaviest) */}
+        <ImageCard ship={ship} />
+
+        {/* Ship Information Card - Always available (basic data) */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
               <ShipIcon className="h-5 w-5 mr-2" />
-              Ship Information
+              Authentication
             </CardTitle>
             <CardDescription>
-              Authentication credentials and basic information
+              Login credentials and vessel registry
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {shipDetails && (
-              <>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Vessel Name</label>
-                  <p className="text-lg font-semibold">{shipDetails.name}</p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Type</label>
-                    <p className="text-sm">{shipDetails.type}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Flag</label>
-                    <p className="text-sm">{shipDetails.flag}</p>
-                  </div>
-                  {shipDetails.length && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Length</label>
-                      <p className="text-sm">{shipDetails.length}m</p>
-                    </div>
-                  )}
-                  {shipDetails.yearBuilt && (
-                    <div>
-                      <label className="text-sm font-medium text-muted-foreground">Year Built</label>
-                      <p className="text-sm">{shipDetails.yearBuilt}</p>
-                    </div>
-                  )}
-                </div>
-                
-                <Separator />
-              </>
-            )}
-            
+          <CardContent className="space-y-4">            
             <div>
               <label className="text-sm font-medium text-muted-foreground">Ship Email</label>
               <p className="text-lg font-mono">{ship.ship_email}</p>
@@ -312,161 +331,26 @@ export default function ShipDetailsPage() {
           </CardContent>
         </Card>
 
-        {/* Ship Image Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <ShipIcon className="h-5 w-5 mr-2" />
-              Ship Image
-            </CardTitle>
-            <CardDescription>
-              Latest satellite or aerial view of the vessel
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {shipImage ? (
-              <div className="space-y-3">
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                  <Image
-                    src={shipImage.url}
-                    alt={`Ship image for ${ship.ship_email}`}
-                    fill
-                    className="object-cover"
-                    priority={false}
-                    onError={(e) => {
-                      console.error('Image failed to load:', shipImage.url);
-                      setShipImage(null);
-                    }}
-                  />
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <p>Source: {shipImage.source}</p>
-                  {shipImage.caption && <p>{shipImage.caption}</p>}
-                  {shipImage.timestamp && (
-                    <p>Captured: {new Date(shipImage.timestamp).toLocaleString()}</p>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <div className="aspect-video w-full flex items-center justify-center bg-muted rounded-lg">
-                <div className="text-center text-muted-foreground">
-                  <ShipIcon className="mx-auto h-12 w-12 mb-2 opacity-50" />
-                  <p className="font-medium">No image available</p>
-                  <p className="text-xs">Image loading failed or not found</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Location Tracking Card */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <MapPin className="h-5 w-5 mr-2" />
-              Location & Tracking
-            </CardTitle>
-            <CardDescription>
-              Real-time position and navigation data with interactive map
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {location ? (
-              <div className="space-y-6">
-                {/* Interactive Map */}
-                <div className="rounded-lg overflow-hidden border">
-                  <ShipMap 
-                    location={location} 
-                    shipEmail={ship.ship_email}
-                    className="w-full"
-                  />
-                </div>
-                
-                {/* Position and Tracking Numbers */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-muted-foreground mb-1">Position</div>
-                    <p className="text-lg font-mono">
-                      {location.latitude.toFixed(6)}°
-                    </p>
-                    <p className="text-lg font-mono">
-                      {location.longitude.toFixed(6)}°
-                    </p>
-                  </div>
-                  {location.mmsi && (
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-muted-foreground mb-1">MMSI</div>
-                      <p className="text-lg font-mono">{location.mmsi}</p>
-                    </div>
-                  )}
-                  {location.imo && (
-                    <div className="text-center">
-                      <div className="text-sm font-medium text-muted-foreground mb-1">IMO</div>
-                      <p className="text-lg font-mono">{location.imo}</p>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Navigation Data */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm font-medium">
-                      <Navigation className="h-4 w-4 mr-1" />
-                      Speed & Course
-                    </div>
-                    <p className="text-sm">
-                      Speed: {location.speed.toFixed(1)} knots
-                    </p>
-                    <p className="text-sm">
-                      Course: {location.course.toFixed(0)}°
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm font-medium">
-                      <Signal className="h-4 w-4 mr-1" />
-                      Status
-                    </div>
-                    <Badge variant={location.status === "Underway" ? "default" : "secondary"}>
-                      {location.status}
-                    </Badge>
-                    {location.port && (
-                      <p className="text-sm text-muted-foreground">
-                        Near: {location.port}
-                      </p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm font-medium">
-                      <Anchor className="h-4 w-4 mr-1" />
-                      Destination
-                    </div>
-                    <p className="text-sm">
-                      {location.destination || "Not specified"}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm font-medium">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      Last Update
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(location.lastUpdate).toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <MapPin className="mx-auto h-12 w-12 mb-2 opacity-50" />
-                <p>Location data unavailable</p>
-                <p className="text-sm">GPS tracking may be disabled or signal lost</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        {/* VesselFinder Map Card - Full width */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Navigation className="h-5 w-5 mr-2" />
+                Live Vessel Tracking
+              </CardTitle>
+              <CardDescription>
+                Real-time position from VesselFinder
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <VesselFinderMap 
+                vesselName={ship.ship_email.split('@')[0]}
+                vesselfinderUrl={ship.vesselfinder_url}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

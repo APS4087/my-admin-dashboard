@@ -18,6 +18,7 @@ interface ParsedShip {
   ship_email: string;
   ship_password: string;
   app_password: string;
+  vesselfinder_url?: string;
   error?: string;
 }
 
@@ -37,6 +38,7 @@ export default function AddShipPage() {
     ship_email: "",
     ship_password: "",
     app_password: "",
+    vesselfinder_url: "",
     is_active: true,
   });
 
@@ -59,18 +61,19 @@ export default function AddShipPage() {
           ship_email: "",
           ship_password: "",
           app_password: "",
-          error: `Invalid format - expected 3 columns, got ${parts.length}`
+          error: `Invalid format - expected 3-4 columns, got ${parts.length}`
         });
         return;
       }
 
-      // Parse format: email	password	app_password
-      const [email, password, appPassword] = parts;
+      // Parse format: email	password	app_password	[vesselfinder_url]
+      const [email, password, appPassword, vesselfinderUrl] = parts;
 
       parsed.push({
         ship_email: email?.trim() || "",
         ship_password: password?.trim() || "",
         app_password: appPassword?.trim() || "",
+        vesselfinder_url: vesselfinderUrl?.trim() || undefined,
       });
     });
 
@@ -119,6 +122,7 @@ export default function AddShipPage() {
           ship_email: ship.ship_email,
           ship_password: ship.ship_password,
           app_password: ship.app_password,
+          vesselfinder_url: ship.vesselfinder_url,
           is_active: true,
         });
         success++;
@@ -162,6 +166,7 @@ export default function AddShipPage() {
               </CardTitle>
               <CardDescription>
                 Copy and paste ship authentication data in tab-separated format.
+                VesselFinder URL is optional but recommended for enhanced tracking.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -175,19 +180,21 @@ export default function AddShipPage() {
                         <th className="border px-2 py-1 text-left">Ship Email</th>
                         <th className="border px-2 py-1 text-left">Ship Password</th>
                         <th className="border px-2 py-1 text-left">App Password</th>
+                        <th className="border px-2 py-1 text-left">VesselFinder URL (Optional)</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr className="text-muted-foreground">
-                        <td className="border px-2 py-1">hy.emerald@gmail.com</td>
+                        <td className="border px-2 py-1">hyemerald01@gmail.com</td>
                         <td className="border px-2 py-1">Hyemerald@87204827</td>
                         <td className="border px-2 py-1">hhxrnbkuxcvieofr</td>
+                        <td className="border px-2 py-1">https://www.vesselfinder.com/vessels/details/9676307</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  💡 Tip: Copy data directly from Excel, Google Sheets, or any spreadsheet application
+                  💡 Tip: Copy data directly from Excel, Google Sheets, or any spreadsheet application. VesselFinder URL enhances tracking accuracy.
                 </p>
               </div>
 
@@ -278,6 +285,7 @@ export default function AddShipPage() {
                             <th className="text-left p-3 font-medium">Email</th>
                             <th className="text-left p-3 font-medium">Password</th>
                             <th className="text-left p-3 font-medium">App Password</th>
+                            <th className="text-left p-3 font-medium">VesselFinder URL</th>
                             <th className="text-left p-3 font-medium">Status</th>
                           </tr>
                         </thead>
@@ -287,6 +295,15 @@ export default function AddShipPage() {
                               <td className="p-3">{ship.ship_email || <span className="text-muted-foreground italic">No email</span>}</td>
                               <td className="p-3">{ship.ship_password ? '***' : <span className="text-muted-foreground italic">No password</span>}</td>
                               <td className="p-3">{ship.app_password ? '***' : <span className="text-muted-foreground italic">No app password</span>}</td>
+                              <td className="p-3">
+                                {ship.vesselfinder_url ? (
+                                  <span className="text-xs text-blue-600 truncate max-w-[200px] block" title={ship.vesselfinder_url}>
+                                    {ship.vesselfinder_url}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground italic text-xs">Optional</span>
+                                )}
+                              </td>
                               <td className="p-3">
                                 {ship.error ? (
                                   <div className="flex items-center">
@@ -405,7 +422,7 @@ export default function AddShipPage() {
                       required
                       value={formData.ship_email}
                       onChange={(e) => handleInputChange("ship_email", e.target.value)}
-                      placeholder="hy.emerald@gmail.com"
+                      placeholder="hyemerald01@gmail.com"
                     />
                   </div>
                   <div>
@@ -429,6 +446,19 @@ export default function AddShipPage() {
                       onChange={(e) => handleInputChange("app_password", e.target.value)}
                       placeholder="hhxrnbkuxcvieofr"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="vesselfinder_url">VesselFinder URL (Optional)</Label>
+                    <Input
+                      id="vesselfinder_url"
+                      type="url"
+                      value={formData.vesselfinder_url || ""}
+                      onChange={(e) => handleInputChange("vesselfinder_url", e.target.value)}
+                      placeholder="https://www.vesselfinder.com/vessels/details/9676307"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Optional: URL to the ship's VesselFinder page for enhanced tracking data
+                    </p>
                   </div>
                 </div>
                 

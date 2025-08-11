@@ -26,4 +26,6 @@ export interface UpdateShipData extends Partial<CreateShipData> {
 export interface ShipFilters {
   is_active?: boolean;
   search?: string;
+  limit?: number;
+  offset?: number;
 }

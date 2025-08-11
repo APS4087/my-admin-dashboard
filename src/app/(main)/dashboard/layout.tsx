@@ -3,8 +3,9 @@ import { ReactNode } from "react";
 import { cookies } from "next/headers";
 
 import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";
+import { ResponsiveSidebarProvider } from "@/app/(main)/dashboard/_components/responsive-sidebar-provider";
 import { Separator } from "@/components/ui/separator";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { getAuthenticatedUser } from "@/lib/auth-utils";
 import { cn } from "@/lib/utils";
 import { getPreference } from "@/server/server-actions";
@@ -51,7 +52,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
     : null;
 
   return (
-    <SidebarProvider defaultOpen={defaultOpen}>
+    <ResponsiveSidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar variant={sidebarVariant} collapsible={sidebarCollapsible} user={user || undefined} />
       <SidebarInset
         data-content-layout={contentLayout}
@@ -60,24 +61,26 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
           // Adds right margin for inset sidebar in centered layout up to 113rem.
           // On wider screens with collapsed sidebar, removes margin and sets margin auto for alignment.
           "max-[113rem]:peer-data-[variant=inset]:!mr-2 min-[101rem]:peer-data-[variant=inset]:peer-data-[state=collapsed]:!mr-auto",
+          // Wide screen optimizations
+          "w-full",
         )}
       >
         <header className="flex h-12 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-          <div className="flex w-full items-center justify-between px-4 lg:px-6">
+          <div className="flex w-full items-center justify-between px-4 lg:px-6 xl:px-8">
             <div className="flex items-center gap-1 lg:gap-2">
-              <SidebarTrigger className="-ml-1" />
-              <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4" />
+              {/* Hide sidebar trigger on wide screens (lg and above), show on mobile/tablet */}
+              <SidebarTrigger className="-ml-1 lg:hidden" />
+              <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4 lg:hidden" />
               <SearchDialog />
             </div>
             <div className="flex items-center gap-2">
               <LayoutControls {...layoutPreferences} />
               <ThemeSwitcher />
-              {user && <AccountSwitcher users={[user]} />}
             </div>
           </div>
         </header>
-        <div className="h-full p-4 md:p-6">{children}</div>
+        <div className="h-full p-4 md:p-6 xl:p-8 2xl:p-10">{children}</div>
       </SidebarInset>
-    </SidebarProvider>
+    </ResponsiveSidebarProvider>
   );
 }

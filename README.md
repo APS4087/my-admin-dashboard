@@ -2,7 +2,7 @@
 
 A comprehensive maritime fleet management and ship tracking dashboard built with Next.js, TypeScript, and Supabase. Features real-time vessel monitoring using VesselFinder integration with web scraping capabilities.
 
-![Ship Tracking Dashboard](media/dashboard.png)
+![Ship Tracking Dashboard]
 
 ## 🚢 Features
 
