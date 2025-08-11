@@ -11,7 +11,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "generate:presets": "ts-node --project tsconfig.scripts.json src/scripts/generate-theme-presets.ts"
+    "generate:presets": "ts-node --project tsconfig.scripts.json src/scripts/generate-theme-presets.ts",
+    "clear-auth": "node scripts/clear-auth.js",
+    "dev:clean": "npm run clear-auth && npm run dev",
+    "setup-dev-auth": "node scripts/setup-dev-auth.js"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [

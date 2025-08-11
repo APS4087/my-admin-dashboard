@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
+
+import Image from "next/image";
+
+import { Camera, ExternalLink } from "lucide-react";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Camera, ExternalLink } from "lucide-react";
 import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
-import type { Ship } from "@/types/ship";
 import type { ShipImage } from "@/lib/ship-tracking-service";
-import Image from "next/image";
+import type { Ship } from "@/types/ship";
 
 interface ImageCardProps {
   ship: Ship;

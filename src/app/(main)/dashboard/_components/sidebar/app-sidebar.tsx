@@ -1,6 +1,6 @@
 "use client";
 
-import { Settings, CircleHelp, Search, Database, ClipboardList, File, Command } from "lucide-react";
+import { Command } from "lucide-react";
 
 import {
   Sidebar,
@@ -17,43 +17,6 @@ import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 
-const data = {
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: CircleHelp,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: Search,
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: Database,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: ClipboardList,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: File,
-    },
-  ],
-};
-
 export function AppSidebar({
   user,
   ...props
@@ -62,8 +25,20 @@ export function AppSidebar({
     readonly name: string;
     readonly email: string;
     readonly avatar: string;
+    readonly role: string;
   };
 }) {
+  // Filter sidebar items based on user role
+  const filteredSidebarItems = sidebarItems
+    .map((group) => {
+      // Hide Administration section for non-admin users
+      if (group.label === "Administration" && user?.role !== "admin" && user?.role !== "administrator") {
+        return { ...group, items: [] };
+      }
+      return group;
+    })
+    .filter((group) => group.items.length > 0); // Remove empty groups
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -79,7 +54,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={sidebarItems} />
+        <NavMain items={filteredSidebarItems} />
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>

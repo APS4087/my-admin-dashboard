@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { TableCell, TableRow } from "@/components/ui/table";
+
+import Image from "next/image";
+import Link from "next/link";
+
+import { MoreHorizontal, Edit, Trash2, Eye, MapPin, ExternalLink } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,12 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MoreHorizontal, Edit, Trash2, Eye, MapPin, ExternalLink } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { TableCell, TableRow } from "@/components/ui/table";
 import { optimizedShipService } from "@/lib/optimized-ship-service";
-import type { Ship } from "@/types/ship";
 import type { ShipLocation, ShipDetails } from "@/lib/ship-tracking-service";
+import type { Ship } from "@/types/ship";
 
 interface ShipRowProps {
   ship: Ship;

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Ship, CreateShipData, UpdateShipData, ShipFilters } from "@/types/ship";
+
 import { shipTrackingService, type ShipLocation, type ShipImage, type ShipDetails } from "./ship-tracking-service";
 
 export interface ShipWithTracking extends Ship {

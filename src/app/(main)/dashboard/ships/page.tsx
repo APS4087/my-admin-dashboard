@@ -1,20 +1,23 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
 import { Plus, Search, RefreshCw, Ship as ShipIcon, BarChart3, ExternalLink } from "lucide-react";
+
+import { PerformanceDashboard } from "@/components/performance-dashboard";
+import { ShipRow } from "@/components/ship-row";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import { optimizedShipService } from "@/lib/optimized-ship-service";
 import { shipService } from "@/lib/ship-service";
-import { ShipRow } from "@/components/ship-row";
-import { PerformanceDashboard } from "@/components/performance-dashboard";
 import type { Ship } from "@/types/ship";
-import Link from "next/link";
-import { useDebounce } from "@/hooks/use-debounce";
 
 export default function ShipsPage() {
   const router = useRouter();

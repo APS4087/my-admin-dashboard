@@ -1,12 +1,13 @@
 import { ReactNode } from "react";
 
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
-import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";
 import { ResponsiveSidebarProvider } from "@/app/(main)/dashboard/_components/responsive-sidebar-provider";
+import { AppSidebar } from "@/app/(main)/dashboard/_components/sidebar/app-sidebar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
-import { getAuthenticatedUser } from "@/lib/auth-utils";
+import { requireApprovedUser } from "@/lib/auth-utils";
 import { cn } from "@/lib/utils";
 import { getPreference } from "@/server/server-actions";
 import {
@@ -18,7 +19,6 @@ import {
   type ContentLayout,
 } from "@/types/preferences/layout";
 
-import { AccountSwitcher } from "./_components/sidebar/account-switcher";
 import { LayoutControls } from "./_components/sidebar/layout-controls";
 import { SearchDialog } from "./_components/sidebar/search-dialog";
 import { ThemeSwitcher } from "./_components/sidebar/theme-switcher";
@@ -27,11 +27,18 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
-  const [sidebarVariant, sidebarCollapsible, contentLayout, authData] = await Promise.all([
+  // Check if user is approved
+  const authResult = await requireApprovedUser();
+  if ("redirectTo" in authResult && authResult.redirectTo) {
+    redirect(authResult.redirectTo);
+  }
+
+  const { authData } = authResult;
+
+  const [sidebarVariant, sidebarCollapsible, contentLayout] = await Promise.all([
     getPreference<SidebarVariant>("sidebar_variant", SIDEBAR_VARIANT_VALUES, "inset"),
     getPreference<SidebarCollapsible>("sidebar_collapsible", SIDEBAR_COLLAPSIBLE_VALUES, "icon"),
     getPreference<ContentLayout>("content_layout", CONTENT_LAYOUT_VALUES, "centered"),
-    getAuthenticatedUser(),
   ]);
 
   const layoutPreferences = {
@@ -44,10 +51,10 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
   const user = authData
     ? {
         id: authData.user.id,
-        name: authData.profile?.full_name || authData.user.email?.split("@")[0] || "User",
-        email: authData.user.email || "",
-        avatar: authData.profile?.avatar_url || "",
-        role: authData.profile?.role || "user",
+        name: authData.profile?.full_name ?? authData.user.email?.split("@")[0] ?? "User",
+        email: authData.user.email ?? "",
+        avatar: authData.profile?.avatar_url ?? "",
+        role: authData.profile?.role ?? "user",
       }
     : null;
 
@@ -70,7 +77,7 @@ export default async function Layout({ children }: Readonly<{ children: ReactNod
             <div className="flex items-center gap-1 lg:gap-2">
               {/* Hide sidebar trigger on wide screens (lg and above), show on mobile/tablet */}
               <SidebarTrigger className="-ml-1 lg:hidden" />
-              <Separator orientation="vertical" className="mx-2 data-[orientation=vertical]:h-4 lg:hidden" />
+              <Separator orientation="vertical" className="lg:hidden mx-2 data-[orientation=vertical]:h-4" />
               <SearchDialog />
             </div>
             <div className="flex items-center gap-2">

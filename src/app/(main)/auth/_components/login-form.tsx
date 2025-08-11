@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -10,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import { useAuth } from "@/contexts/auth-context";
 
 const FormSchema = z.object({
@@ -21,6 +22,7 @@ const FormSchema = z.object({
 
 export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuth();
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -58,60 +60,108 @@ export function LoginForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-foreground text-sm font-medium">Email Address</FormLabel>
               <FormControl>
-                <Input id="email" type="email" placeholder="you@example.com" autoComplete="email" {...field} />
+                <div className="relative">
+                  <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    className="focus:ring-primary/20 h-11 pl-10 transition-all duration-200 focus:ring-2"
+                    autoComplete="email"
+                    {...field}
+                  />
+                </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="password"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-foreground text-sm font-medium">Password</FormLabel>
               <FormControl>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  {...field}
-                />
+                <div className="relative">
+                  <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="focus:ring-primary/20 h-11 pr-10 pl-10 transition-all duration-200 focus:ring-2"
+                    autoComplete="current-password"
+                    {...field}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="remember"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-center">
-              <FormControl>
-                <Checkbox
-                  id="login-remember"
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  className="size-4"
-                />
-              </FormControl>
-              <FormLabel htmlFor="login-remember" className="text-muted-foreground ml-1 text-sm font-medium">
-                Remember me for 30 days
-              </FormLabel>
-            </FormItem>
+
+        <div className="flex items-center justify-between">
+          <FormField
+            control={form.control}
+            name="remember"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center space-y-0 space-x-2">
+                <FormControl>
+                  <Checkbox
+                    id="login-remember"
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    className="h-4 w-4"
+                  />
+                </FormControl>
+                <FormLabel
+                  htmlFor="login-remember"
+                  className="text-muted-foreground hover:text-foreground cursor-pointer text-sm font-medium transition-colors"
+                >
+                  Remember me
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+
+          <button
+            type="button"
+            className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+            onClick={() => toast.info("Forgot password feature coming soon!")}
+          >
+            Forgot password?
+          </button>
+        </div>
+
+        <Button
+          className="h-11 w-full text-sm font-medium transition-all duration-200 hover:shadow-lg disabled:opacity-70"
+          type="submit"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing in...
+            </>
+          ) : (
+            "Sign in to your account"
           )}
-        />
-        <Button className="w-full" type="submit" disabled={isLoading}>
-          {isLoading ? "Signing in..." : "Login"}
         </Button>
       </form>
     </Form>

@@ -290,26 +290,26 @@ async function actualScrapeVesselFinder(url: string) {
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-  
+
   const page = await browser.newPage();
-  
+
   // Set user agent to avoid detection
   await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-  
+
   await page.goto(url, { waitUntil: 'networkidle2' });
-  
+
   // Wait for content to load
   await page.waitForSelector('.vessel-data', { timeout: 10000 });
-  
+
   const data = await page.evaluate(() => {
     // Extract data from the page
     const name = document.querySelector('.vessel-name')?.textContent?.trim();
     const mmsi = document.querySelector('.mmsi-number')?.textContent?.trim();
     const position = document.querySelector('.position')?.textContent?.trim();
-    
+
     return { name, mmsi, position };
   });
-  
+
   await browser.close();
   return data;
 }

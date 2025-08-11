@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { MapPin, Navigation, Anchor, Ship as ShipIcon, Signal, Clock } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
-import type { Ship } from "@/types/ship";
 import type { ShipLocation } from "@/lib/ship-tracking-service";
+import type { Ship } from "@/types/ship";
 
 interface LocationCardProps {
   ship: Ship;

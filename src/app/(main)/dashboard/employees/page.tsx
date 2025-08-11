@@ -1,23 +1,25 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+
+import Link from "next/link";
+
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useDebounce } from "@/hooks/use-debounce";
 import { EmployeeService } from "@/lib/employee-service";
 import type { Employee } from "@/types/employee";
-import Link from "next/link";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useDebounce } from "@/hooks/use-debounce";
 
 // Enhanced loading skeleton for table
 function EmployeeTableSkeleton() {
@@ -239,10 +241,10 @@ function EmployeesPage() {
                           <span className="block truncate">{employee.email_address}</span>
                         </TableCell>
                         <TableCell>
-                          <span className="block truncate">{employee.department || "—"}</span>
+                          <span className="block truncate">{employee.department ?? "—"}</span>
                         </TableCell>
                         <TableCell>
-                          <span className="block truncate">{employee.job_title || "—"}</span>
+                          <span className="block truncate">{employee.job_title ?? "—"}</span>
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>

@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+
+import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { Edit, Trash2, Mail, Phone, Briefcase, Building, Calendar, User } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Edit, Trash2, Mail, Phone, Briefcase, Building, Calendar, User, Key, MapPin } from "lucide-react";
 import { employeeService } from "@/lib/employee-service";
 import type { Employee } from "@/types/employee";
-import Link from "next/link";
 
 export default function EmployeeDetailPage() {
   const router = useRouter();
@@ -142,7 +145,7 @@ export default function EmployeeDetailPage() {
                 </div>
                 <div className="md:col-span-2">
                   <label className="text-muted-foreground text-sm font-medium">Display Name</label>
-                  <p className="text-base">{employee.display_name || "—"}</p>
+                  <p className="text-base">{employee.display_name ?? "—"}</p>
                 </div>
               </div>
             </CardContent>
@@ -172,7 +175,7 @@ export default function EmployeeDetailPage() {
                 <div>
                   <label className="text-muted-foreground text-sm font-medium">Office Phone</label>
                   <div className="flex items-center space-x-2">
-                    <p className="text-base">{employee.office_phone || "—"}</p>
+                    <p className="text-base">{employee.office_phone ?? "—"}</p>
                     {employee.office_phone && (
                       <a href={`tel:${employee.office_phone}`}>
                         <Button variant="ghost" size="sm">
@@ -185,7 +188,7 @@ export default function EmployeeDetailPage() {
                 <div>
                   <label className="text-muted-foreground text-sm font-medium">Mobile Phone</label>
                   <div className="flex items-center space-x-2">
-                    <p className="text-base">{employee.mobile_phone || "—"}</p>
+                    <p className="text-base">{employee.mobile_phone ?? "—"}</p>
                     {employee.mobile_phone && (
                       <a href={`tel:${employee.mobile_phone}`}>
                         <Button variant="ghost" size="sm">
@@ -213,12 +216,12 @@ export default function EmployeeDetailPage() {
                   <label className="text-muted-foreground text-sm font-medium">Department</label>
                   <div className="flex items-center space-x-2">
                     <Building className="text-muted-foreground h-4 w-4" />
-                    <p className="text-base">{employee.department || "—"}</p>
+                    <p className="text-base">{employee.department ?? "—"}</p>
                   </div>
                 </div>
                 <div>
                   <label className="text-muted-foreground text-sm font-medium">Job Title</label>
-                  <p className="text-base">{employee.job_title || "—"}</p>
+                  <p className="text-base">{employee.job_title ?? "—"}</p>
                 </div>
               </div>
             </CardContent>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+
 import puppeteer from "puppeteer";
 
 /**
@@ -606,18 +607,18 @@ async function actualScrapeVesselFinderDetail(url: string) {
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
-  
+
   try {
     const page = await browser.newPage();
-    
+
     // Set user agent to avoid detection
     await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
-    
+
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-    
+
     // Wait for vessel data to load
     await page.waitForSelector('.vessel-details', { timeout: 10000 });
-    
+
     const data = await page.evaluate(() => {
       // Extract vessel information from the page
       const name = document.querySelector('.vessel-name h1')?.textContent?.trim();
@@ -625,15 +626,15 @@ async function actualScrapeVesselFinderDetail(url: string) {
       const imo = document.querySelector('[data-label="IMO"] .value')?.textContent?.trim();
       const type = document.querySelector('[data-label="Type"] .value')?.textContent?.trim();
       const flag = document.querySelector('[data-label="Flag"] .value')?.textContent?.trim();
-      
+
       // Extract location data from map or coordinates section
       const latitude = parseFloat(document.querySelector('[data-latitude]')?.getAttribute('data-latitude') || '0');
       const longitude = parseFloat(document.querySelector('[data-longitude]')?.getAttribute('data-longitude') || '0');
-      
+
       // Extract speed and course
       const speed = parseFloat(document.querySelector('[data-label="Speed"] .value')?.textContent?.replace(/[^\d.]/g, '') || '0');
       const course = parseFloat(document.querySelector('[data-label="Course"] .value')?.textContent?.replace(/[^\d.]/g, '') || '0');
-      
+
       return {
         name,
         mmsi,
@@ -648,7 +649,7 @@ async function actualScrapeVesselFinderDetail(url: string) {
         }
       };
     });
-    
+
     return data;
   } finally {
     await browser.close();

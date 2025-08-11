@@ -5,7 +5,6 @@ import { BarChart3, Clock, Database, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
 import { useShipPerformanceMetrics } from "@/hooks/use-ship-performance-metrics";
 import { optimizedShipService } from "@/lib/optimized-ship-service";
 

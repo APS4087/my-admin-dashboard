@@ -4,7 +4,6 @@ import { Ship as ShipIcon, Flag, Calendar, Ruler } from "lucide-react";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-
 import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
 import type { ShipDetails } from "@/lib/ship-tracking-service";
 import type { Ship } from "@/types/ship";

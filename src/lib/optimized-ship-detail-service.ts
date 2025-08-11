@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Ship } from "@/types/ship";
+
 import { optimizedShipService } from "./optimized-ship-service";
 import { shipCache } from "./ship-cache-service";
 import { shipTrackingService, type ShipLocation, type ShipImage, type ShipDetails } from "./ship-tracking-service";

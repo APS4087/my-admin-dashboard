@@ -1,14 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
+import { useRouter } from "next/navigation";
+
 import {
   Plus,
   Search,
@@ -23,12 +18,20 @@ import {
   CheckCircle2,
   Upload,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { shipAuthService } from "@/lib/ship-auth-service";
 import { shipService } from "@/lib/ship-service";
-import type { ShipAuth, CreateShipAuthData } from "@/types/ship-auth";
 import type { Ship } from "@/types/ship";
-import { toast } from "sonner";
+import type { ShipAuth, CreateShipAuthData } from "@/types/ship-auth";
 
 interface ParsedShipAuth {
   ship_email: string;

@@ -1,14 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
+
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+
 import {
   ArrowLeft,
   Edit,
@@ -25,15 +23,21 @@ import {
   Calendar,
   User,
 } from "lucide-react";
-import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
-import { shipService } from "@/lib/ship-service";
-import { LocationCard } from "@/components/ship-detail/location-card";
+
+import { PerformanceDashboard } from "@/components/performance-dashboard";
 import { DetailsCard } from "@/components/ship-detail/details-card";
 import { ImageCard } from "@/components/ship-detail/image-card";
-import { PerformanceDashboard } from "@/components/performance-dashboard";
-import type { Ship } from "@/types/ship";
+import { LocationCard } from "@/components/ship-detail/location-card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
+import { shipService } from "@/lib/ship-service";
 import type { ShipLocation, ShipDetails } from "@/lib/ship-tracking-service";
-import dynamic from "next/dynamic";
+import type { Ship } from "@/types/ship";
 
 // Dynamically import the map component to avoid SSR issues
 const ShipMap = dynamic(() => import("@/components/ship-map").then((mod) => ({ default: mod.ShipMap })), {

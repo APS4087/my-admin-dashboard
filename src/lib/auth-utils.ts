@@ -21,3 +21,23 @@ export async function getAuthenticatedUser() {
     profile: profile as Profile | null,
   };
 }
+
+export async function requireApprovedUser() {
+  const authData = await getAuthenticatedUser();
+
+  if (!authData?.user) {
+    return { redirectTo: "/auth/v1/login" };
+  }
+
+  if (!authData.profile) {
+    return { redirectTo: "/auth/v1/login" };
+  }
+
+  // Check if user is approved (admins are auto-approved)
+  const isAdmin = authData.profile.role === "admin" || authData.profile.role === "administrator";
+  if (!isAdmin && !authData.profile.approved) {
+    return { redirectTo: "/pending-approval" };
+  }
+
+  return { authData };
+}

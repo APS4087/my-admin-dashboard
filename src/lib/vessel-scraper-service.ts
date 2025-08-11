@@ -39,7 +39,7 @@ export class VesselScraperService {
   async searchShips(query: string): Promise<ScrapedShipData[]> {
     try {
       // Use a CORS proxy or server-side scraping
-      const searchUrl = `${this.BASE_URL}/vessels?name=${encodeURIComponent(query)}`;
+      // const searchUrl = `${this.BASE_URL}/vessels?name=${encodeURIComponent(query)}`;
 
       // For client-side, we'll simulate the search with mock data
       // In production, this should be done server-side
@@ -55,7 +55,7 @@ export class VesselScraperService {
    */
   async getShipByMMSI(mmsi: string): Promise<ScrapedShipData | null> {
     try {
-      const shipUrl = `${this.BASE_URL}/vessels/${mmsi}`;
+      // const shipUrl = `${this.BASE_URL}/vessels/${mmsi}`;
 
       // For client-side, we'll use mock data
       // In production, implement server-side scraping
@@ -320,7 +320,7 @@ export class VesselScraperService {
    * Server-side scraping method (to be implemented in API route)
    * This is where you would implement actual web scraping
    */
-  static async scrapeVesselFinderServer(url: string): Promise<any> {
+  static async scrapeVesselFinderServer(_url: string): Promise<any> {
     // This should be implemented in a Next.js API route
     // using libraries like Puppeteer, Playwright, or Cheerio
 

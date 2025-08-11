@@ -1,0 +1,48 @@
+# Supabase configuration file
+# This file is used to configure Supabase for local development
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54322
+external_url = "http://localhost:3000"
+# Increase token refresh threshold to reduce refresh token errors during development
+refresh_token_rotation_enabled = true
+refresh_token_reuse_interval = 10
+# Extend session timeout for development
+access_token_expire_seconds = 3600  # 1 hour
+refresh_token_expire_seconds = 604800  # 1 week
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false  # Disable for local development
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+port = 54325
+
+[edge_runtime]
+enabled = true
+port = 54326
+
+[analytics]
+enabled = false

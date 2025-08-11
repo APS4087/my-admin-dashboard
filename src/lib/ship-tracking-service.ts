@@ -3,7 +3,7 @@
  * Integrates with VesselFinder scraping service for ship location and image data
  */
 
-import { vesselScraperService, type ScrapedShipData } from "./vessel-scraper-service";
+import { vesselScraperService } from "./vessel-scraper-service";
 
 export interface ShipLocation {
   latitude: number;

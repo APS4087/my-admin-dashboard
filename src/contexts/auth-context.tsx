@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, useMemo, useCallback } 
 
 import { useRouter } from "next/navigation";
 
+import { authRecovery, setupAuthErrorHandler } from "@/lib/auth-recovery";
 import { createClient } from "@/lib/supabase/client";
 import type { AuthContextType, AuthUser, Profile } from "@/types/auth";
 
@@ -37,16 +38,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   useEffect(() => {
+    // Setup global auth error handler
+    setupAuthErrorHandler();
+
     // Get initial session
     const getInitialSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchProfile(session.user.id);
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
+        if (error && error.message.includes("refresh_token_not_found")) {
+          console.log("🔄 Refresh token error detected, attempting recovery...");
+          const recovered = await authRecovery.handleRefreshTokenError();
+          if (!recovered) {
+            setUser(null);
+            setProfile(null);
+            setLoading(false);
+            return;
+          }
+          // Try again after recovery
+          const {
+            data: { session: newSession },
+          } = await supabase.auth.getSession();
+          setUser(newSession?.user ?? null);
+          if (newSession?.user) {
+            await fetchProfile(newSession.user.id);
+          }
+        } else {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error getting initial session:", error);
+        setUser(null);
+        setProfile(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     getInitialSession();
@@ -55,12 +87,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
+      console.log("🔐 Auth state change:", event);
 
-      if (session?.user) {
-        await fetchProfile(session.user.id);
-      } else {
+      if (event === "SIGNED_OUT") {
+        setUser(null);
         setProfile(null);
+      } else if (event === "TOKEN_REFRESHED") {
+        console.log("✅ Token refreshed successfully");
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        }
+      } else {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+        } else {
+          setProfile(null);
+        }
       }
 
       setLoading(false);
@@ -71,54 +115,83 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = useCallback(
     async (email: string, password: string) => {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-      if (!error) {
-        router.push("/dashboard");
+        if (!error) {
+          router.push("/dashboard");
+        }
+
+        return { error };
+      } catch (error) {
+        console.error("Sign in error:", error);
+        return { error };
       }
-
-      return { error };
     },
     [supabase.auth, router],
   );
 
   const signUp = useCallback(
     async (email: string, password: string, fullName?: string) => {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
+      try {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: fullName,
+            },
           },
-        },
-      });
+        });
 
-      return { error };
+        return { error };
+      } catch (error) {
+        console.error("Sign up error:", error);
+        return { error };
+      }
     },
     [supabase.auth],
   );
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
-    router.push("/auth/v1/login");
+    try {
+      await supabase.auth.signOut();
+      router.push("/auth/v1/login");
+    } catch (error) {
+      console.error("Sign out error:", error);
+      // Force clear auth state even if signOut fails
+      await authRecovery.clearAuthState();
+      router.push("/auth/v1/login");
+    }
   }, [supabase.auth, router]);
 
   const signInWithGoogle = useCallback(async () => {
-    // Get the site URL, prioritizing environment variable
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== "undefined" ? window.location.origin : "");
+    try {
+      // Get the appropriate site URL for the current environment
+      const isDevelopment = process.env.NODE_ENV === "development";
+      const siteUrl = isDevelopment
+        ? typeof window !== "undefined"
+          ? window.location.origin
+          : "http://localhost:3000"
+        : (process.env.NEXT_PUBLIC_SITE_URL ?? (typeof window !== "undefined" ? window.location.origin : ""));
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${siteUrl}/auth/callback`,
-      },
-    });
+      console.log("🔄 Google OAuth redirect URL:", `${siteUrl}/auth/callback`);
 
-    return { error };
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${siteUrl}/auth/callback`,
+        },
+      });
+
+      return { error };
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      return { error };
+    }
   }, [supabase.auth]);
 
   const value = useMemo(

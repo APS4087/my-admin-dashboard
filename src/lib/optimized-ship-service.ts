@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/client";
 import type { Ship, ShipFilters } from "@/types/ship";
-import { shipTrackingService, type ShipLocation, type ShipDetails } from "./ship-tracking-service";
+
 import { shipCache } from "./ship-cache-service";
+import { shipTrackingService, type ShipLocation, type ShipDetails } from "./ship-tracking-service";
 
 export interface ShipWithTracking extends Ship {
   location?: ShipLocation;

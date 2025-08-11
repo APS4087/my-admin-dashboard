@@ -30,9 +30,46 @@ export async function updateUserRole(userEmail: string, role: "user" | "admin" |
 export async function getAllUsers() {
   const supabase = createClient();
 
+  const { data, error } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+}
+
+export async function approveUser(userId: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase.from("profiles").update({ approved: true }).eq("id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { success: true };
+}
+
+export async function unapproveUser(userId: string) {
+  const supabase = createClient();
+
+  const { error } = await supabase.from("profiles").update({ approved: false }).eq("id", userId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return { success: true };
+}
+
+export async function getPendingUsers() {
+  const supabase = createClient();
+
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role, created_at")
+    .select("*")
+    .eq("approved", false)
     .order("created_at", { ascending: false });
 
   if (error) {

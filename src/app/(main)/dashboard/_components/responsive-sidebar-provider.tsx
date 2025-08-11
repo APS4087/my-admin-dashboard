@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
+
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 interface ResponsiveSidebarProviderProps {

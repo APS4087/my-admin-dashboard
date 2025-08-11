@@ -9,6 +9,7 @@ import {
   Ship,
   Plus,
   Key,
+  UserCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -93,6 +94,17 @@ export const sidebarItems: NavGroup[] = [
   },
   {
     id: 4,
+    label: "Administration",
+    items: [
+      {
+        title: "User Approval",
+        url: "/dashboard/users/approval",
+        icon: UserCheck,
+      },
+    ],
+  },
+  {
+    id: 5,
     label: "Reports & Analytics",
     items: [
       {
@@ -113,7 +125,7 @@ export const sidebarItems: NavGroup[] = [
     ],
   },
   {
-    id: 5,
+    id: 6,
     label: "Settings",
     items: [
       {

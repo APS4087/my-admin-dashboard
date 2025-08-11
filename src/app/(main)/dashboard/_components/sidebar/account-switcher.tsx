@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { cn, getInitials } from "@/lib/utils";
 import { useAuth } from "@/contexts/auth-context";
+import { cn, getInitials } from "@/lib/utils";
 
 export function AccountSwitcher({
   users,
