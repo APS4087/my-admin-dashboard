@@ -48,11 +48,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
 
         if (error) {
-          console.error("❌ Error fetching profile:", error);
+          console.error("❌ Error fetching profile:", {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            fullError: error,
+          });
 
           // If PGRST116, the profile doesn't exist (acceptable for new users)
           if (error.code === "PGRST116") {
             console.log("ℹ️ Profile not found - this is normal for new users");
+            return;
+          }
+
+          // If it's an RLS error, it might be that RLS is blocking the query
+          if (error.code === "42501" || error.message?.includes("permission denied")) {
+            console.error("🚫 RLS Permission denied - check if RLS policies are correct");
             return;
           }
 
