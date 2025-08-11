@@ -50,7 +50,7 @@ create trigger update_ship_auth_updated_at
   execute function public.update_ship_auth_updated_at();
 
 -- Insert sample ship authentication data
-insert into public.ship_auth (ship_email, ship_password, app_password) values 
-('hy.emerald@gmail.com', 'Hyemerald@87204827', 'hhxrnbkuxcvieofr'),
-('hypartner02@gmail.com', 'Hypartner@87204825', 'tpmk jmtv ypwz xhhw'),
-('hychampion03@gmail.com', 'Hychampion@87204820', 'xhlv mhqa etdo yhsv');
+-- NOTE: Use environment variables or secure methods to populate real credentials
+-- Example:
+-- insert into public.ship_auth (ship_email, ship_password, app_password) values 
+-- ('example@company.com', 'SECURE_PASSWORD_FROM_ENV', 'APP_SPECIFIC_PASSWORD_FROM_ENV');

@@ -28,6 +28,13 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
+.env.production
+
+# credentials and sensitive data
+**/credentials.sql
+**/seed-credentials*.sql
+**/real-credentials*.sql
 
 # vercel
 .vercel
