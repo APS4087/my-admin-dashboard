@@ -20,18 +20,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchProfile = useCallback(
     async (userId: string) => {
       try {
+        console.log("🔍 Fetching profile for user:", userId);
+
+        // Ensure we have a valid session with proper JWT before making the query
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error("❌ Session error:", sessionError);
+          return;
+        }
+
+        if (!session || !session.access_token) {
+          console.error("❌ No valid session or access token found");
+          return;
+        }
+
+        console.log("✅ Valid session found with access token");
+
+        // In production, add a small delay to ensure JWT is properly attached to the request
+        if (process.env.NODE_ENV === "production") {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+
         const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
 
-        if (error && error.code !== "PGRST116") {
-          console.error("Error fetching profile:", error);
+        if (error) {
+          console.error("❌ Error fetching profile:", error);
+
+          // If PGRST116, the profile doesn't exist (acceptable for new users)
+          if (error.code === "PGRST116") {
+            console.log("ℹ️ Profile not found - this is normal for new users");
+            return;
+          }
+
           return;
         }
 
         if (data) {
+          console.log("✅ Profile fetched successfully");
           setProfile(data);
         }
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error("❌ Unexpected error fetching profile:", error);
       }
     },
     [supabase],

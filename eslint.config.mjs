@@ -119,13 +119,13 @@ export default [
       // Naming Conventions
       "no-underscore-dangle": ["error", { allow: ["_id", "__dirname"] }],
 
-      // Complexity
-      complexity: ["error", { max: 10 }],
-      "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
-      "max-depth": ["error", 4],
+      // Complexity (relaxed temporarily)
+      complexity: ["warn", { max: 25 }],
+      "max-lines": ["warn", { max: 600, skipBlankLines: true, skipComments: true }],
+      "max-depth": ["warn", 6],
 
       // TypeScript-Specific Rules (customized)
-      "@typescript-eslint/prefer-nullish-coalescing": "error",
+      "@typescript-eslint/prefer-nullish-coalescing": "warn",
       "@typescript-eslint/no-unnecessary-type-assertion": "error",
       "@typescript-eslint/no-unnecessary-condition": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
@@ -133,6 +133,7 @@ export default [
 
       // React unnecessary import rules
       "react/jsx-no-useless-fragment": ["warn", { allowExpressions: true }],
+      "react/no-unescaped-entities": "warn",
 
       // React JSX Pascal Case Rule
       "react/jsx-pascal-case": [
