@@ -49,7 +49,7 @@ export class ShipTrackingService {
   private isCacheValid(key: string): boolean {
     const entry = this.cache.get(key);
     if (!entry) return false;
-    
+
     return Date.now() - entry.timestamp < entry.ttl;
   }
 
@@ -61,7 +61,7 @@ export class ShipTrackingService {
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
-      ttl
+      ttl,
     });
 
     // Clean up old entries periodically
@@ -92,18 +92,20 @@ export class ShipTrackingService {
   }> {
     try {
       const scrapedData = await this.fetchFromVesselFinderURL(vesselfinderUrl);
-      
+
       if (!scrapedData) {
         return { location: null, image: null, details: null };
       }
 
       const location = this.convertToShipLocation(scrapedData);
-      const image = scrapedData.image ? {
-        url: scrapedData.image,
-        source: "VesselFinder",
-        timestamp: new Date().toISOString(),
-      } : null;
-      
+      const image = scrapedData.image
+        ? {
+            url: scrapedData.image,
+            source: "VesselFinder",
+            timestamp: new Date().toISOString(),
+          }
+        : null;
+
       const details = {
         name: scrapedData.name,
         type: scrapedData.type,

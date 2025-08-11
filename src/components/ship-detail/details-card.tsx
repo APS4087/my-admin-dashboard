@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+
+import { Ship as ShipIcon, Flag, Calendar, Ruler } from "lucide-react";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Ship as ShipIcon, Flag, Calendar, Ruler } from "lucide-react";
+
 import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
-import type { Ship } from "@/types/ship";
 import type { ShipDetails } from "@/lib/ship-tracking-service";
+import type { Ship } from "@/types/ship";
 
 interface DetailsCardProps {
   ship: Ship;
@@ -30,15 +33,15 @@ export function DetailsCard({ ship }: DetailsCardProps) {
 
         // Load fresh data
         const trackingData = await optimizedShipDetailService.loadTrackingData(ship);
-        
+
         if (isMounted) {
           setDetails(trackingData.details || null);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error loading ship details:', error);
+        console.error("Error loading ship details:", error);
         if (isMounted) {
-          setError('Failed to load ship details');
+          setError("Failed to load ship details");
           setLoading(false);
         }
       }
@@ -87,7 +90,7 @@ export function DetailsCard({ ship }: DetailsCardProps) {
   }
 
   // Use ship email as fallback for name
-  const shipName = details?.name || ship.ship_email.split('@')[0].toUpperCase();
+  const shipName = details?.name || ship.ship_email.split("@")[0].toUpperCase();
 
   return (
     <Card>
@@ -107,37 +110,29 @@ export function DetailsCard({ ship }: DetailsCardProps) {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-sm font-medium">Type</p>
-            <p className="text-sm text-muted-foreground">
-              {details?.type || "Unknown"}
-            </p>
+            <p className="text-muted-foreground text-sm">{details?.type || "Unknown"}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium flex items-center space-x-1">
+            <p className="flex items-center space-x-1 text-sm font-medium">
               <Flag className="h-4 w-4" />
               <span>Flag</span>
             </p>
-            <p className="text-sm text-muted-foreground">
-              {details?.flag || "Unknown"}
-            </p>
+            <p className="text-muted-foreground text-sm">{details?.flag || "Unknown"}</p>
           </div>
         </div>
 
         {(details?.length || details?.width) && (
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <p className="text-sm font-medium flex items-center space-x-1">
+              <p className="flex items-center space-x-1 text-sm font-medium">
                 <Ruler className="h-4 w-4" />
                 <span>Length</span>
               </p>
-              <p className="text-sm text-muted-foreground">
-                {details?.length ? `${details.length} m` : "Unknown"}
-              </p>
+              <p className="text-muted-foreground text-sm">{details?.length ? `${details.length} m` : "Unknown"}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium">Width</p>
-              <p className="text-sm text-muted-foreground">
-                {details?.width ? `${details.width} m` : "Unknown"}
-              </p>
+              <p className="text-muted-foreground text-sm">{details?.width ? `${details.width} m` : "Unknown"}</p>
             </div>
           </div>
         )}
@@ -146,38 +141,30 @@ export function DetailsCard({ ship }: DetailsCardProps) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm font-medium">Deadweight</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {details?.deadweight ? `${details.deadweight.toLocaleString()} tons` : "Unknown"}
               </p>
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium flex items-center space-x-1">
+              <p className="flex items-center space-x-1 text-sm font-medium">
                 <Calendar className="h-4 w-4" />
                 <span>Built</span>
               </p>
-              <p className="text-sm text-muted-foreground">
-                {details?.yearBuilt || "Unknown"}
-              </p>
+              <p className="text-muted-foreground text-sm">{details?.yearBuilt || "Unknown"}</p>
             </div>
           </div>
         )}
 
         {(details?.imo || details?.imo) && (
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+          <div className="grid grid-cols-2 gap-4 border-t pt-2">
             <div className="space-y-1">
               <p className="text-sm font-medium">IMO Number</p>
-              <p className="text-sm text-muted-foreground font-mono">
-                {details?.imo || "Unknown"}
-              </p>
+              <p className="text-muted-foreground font-mono text-sm">{details?.imo || "Unknown"}</p>
             </div>
           </div>
         )}
 
-        {error && (
-          <div className="text-sm text-red-500 bg-red-50 p-2 rounded">
-            {error}
-          </div>
-        )}
+        {error && <div className="rounded bg-red-50 p-2 text-sm text-red-500">{error}</div>}
       </CardContent>
     </Card>
   );

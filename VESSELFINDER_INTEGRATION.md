@@ -25,6 +25,7 @@ The scraping service parses the HTML structure you provided:
 ```
 
 Key data extraction points:
+
 - **Vessel Name**: From `<h1 class="title">` element
 - **Type & IMO**: From `<h2 class="vst">` subtitle
 - **MMSI**: From voyage data table `IMO / MMSI` row
@@ -48,14 +49,15 @@ The ship tracking service now prioritizes VesselFinder URLs when available:
 ```typescript
 // Updated calls
 const locationData = await shipTrackingService.getShipLocation(
-  shipData.ship_email, 
-  shipData.vesselfinder_url  // NEW: Uses VF URL if available
+  shipData.ship_email,
+  shipData.vesselfinder_url, // NEW: Uses VF URL if available
 );
 ```
 
 ### 4. Enhanced Ship Forms
 
 The add/edit ship forms now include:
+
 - VesselFinder URL field (optional)
 - Bulk import supports 4th column for VF URLs
 - Enhanced preview showing URL data
@@ -63,9 +65,11 @@ The add/edit ship forms now include:
 ## API Endpoints
 
 ### `/api/scrape-vessel-detail` (POST)
+
 Scrapes individual VesselFinder vessel pages.
 
 **Request:**
+
 ```json
 {
   "url": "https://www.vesselfinder.com/vessels/details/9676307"
@@ -73,6 +77,7 @@ Scrapes individual VesselFinder vessel pages.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -95,6 +100,7 @@ Scrapes individual VesselFinder vessel pages.
 ```
 
 ### `/api/test-scraping` (GET/POST)
+
 Test endpoint for verifying scraping functionality.
 
 ## Testing
@@ -105,6 +111,7 @@ Visit `/dashboard/ships/test` to test the scraping functionality:
 2. **URL Test**: Test direct VesselFinder URL scraping (real scraping)
 
 Example URLs to test:
+
 - `https://www.vesselfinder.com/vessels/details/9676307` (HY EMERALD)
 - Any VesselFinder vessel detail page
 
@@ -146,6 +153,7 @@ To use real scraping in production:
 ## Future Enhancements
 
 Potential improvements:
+
 - Add Puppeteer for JavaScript-heavy pages
 - Implement caching to reduce API calls
 - Add background jobs for data updates

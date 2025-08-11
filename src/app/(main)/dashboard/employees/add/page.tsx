@@ -51,12 +51,12 @@ export default function AddEmployeePage() {
   });
 
   const parseBulkData = () => {
-    const lines = bulkData.trim().split('\n');
+    const lines = bulkData.trim().split("\n");
     const parsed: ParsedEmployee[] = [];
 
     lines.forEach((line, index) => {
-      const parts = line.split('\t');
-      
+      const parts = line.split("\t");
+
       if (parts.length < 6) {
         parsed.push({
           employee_number: index + 1,
@@ -68,7 +68,7 @@ export default function AddEmployeePage() {
           office_phone: "",
           mobile_phone: "",
           job_title: "",
-          error: `Invalid format - expected at least 6 columns, got ${parts.length}`
+          error: `Invalid format - expected at least 6 columns, got ${parts.length}`,
         });
         return;
       }
@@ -84,7 +84,7 @@ export default function AddEmployeePage() {
         department,
         officePhone = "",
         mobilePhone = "",
-        jobTitle = ""
+        jobTitle = "",
       ] = parts;
 
       parsed.push({
@@ -106,7 +106,7 @@ export default function AddEmployeePage() {
   const handleBulkImport = async () => {
     setLoading(true);
     setImportResults(null);
-    
+
     let success = 0;
     let failed = 0;
     const errors: string[] = [];
@@ -139,7 +139,7 @@ export default function AddEmployeePage() {
         success++;
       } catch (error) {
         failed++;
-        errors.push(`Row ${emp.employee_number}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        errors.push(`Row ${emp.employee_number}: ${error instanceof Error ? error.message : "Unknown error"}`);
       }
     }
 
@@ -148,7 +148,7 @@ export default function AddEmployeePage() {
 
     if (success > 0 && failed === 0) {
       setTimeout(() => {
-        router.push('/dashboard/employees');
+        router.push("/dashboard/employees");
       }, 2000);
     }
   };
@@ -159,21 +159,19 @@ export default function AddEmployeePage() {
 
     try {
       await employeeService.createEmployee(singleEmployee as CreateEmployeeData);
-      router.push('/dashboard/employees');
+      router.push("/dashboard/employees");
     } catch (error) {
-      console.error('Failed to create employee:', error);
+      console.error("Failed to create employee:", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold">Add Employees</h1>
-        <p className="text-muted-foreground">
-          Add new employees individually or import multiple employees at once
-        </p>
+        <p className="text-muted-foreground">Add new employees individually or import multiple employees at once</p>
       </div>
 
       <Tabs defaultValue="bulk" className="space-y-6">
@@ -195,10 +193,10 @@ export default function AddEmployeePage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Format Example */}
-              <div className="bg-muted/50 border rounded-lg p-4">
-                <h4 className="font-medium mb-2 text-sm">Expected Format:</h4>
+              <div className="bg-muted/50 rounded-lg border p-4">
+                <h4 className="mb-2 text-sm font-medium">Expected Format:</h4>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-xs border-collapse">
+                  <table className="w-full border-collapse text-xs">
                     <thead>
                       <tr className="bg-muted">
                         <th className="border px-2 py-1 text-left">ID</th>
@@ -227,56 +225,45 @@ export default function AddEmployeePage() {
                     </tbody>
                   </table>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-2 text-xs">
                   💡 Tip: Copy data directly from Excel, Google Sheets, or any spreadsheet application
                 </p>
               </div>
 
               {/* Input Area */}
               <div className="space-y-3">
-                <Label htmlFor="bulkData" className="text-base font-medium">Employee Data</Label>
+                <Label htmlFor="bulkData" className="text-base font-medium">
+                  Employee Data
+                </Label>
                 <Textarea
                   id="bulkData"
                   placeholder="Paste your employee data here... (Ctrl+V)"
                   value={bulkData}
                   onChange={(e) => setBulkData(e.target.value)}
-                  className="min-h-[300px] font-mono text-sm resize-none"
+                  className="min-h-[300px] resize-none font-mono text-sm"
                 />
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-muted-foreground">
-                    {bulkData.trim() ? `${bulkData.trim().split('\n').length} rows detected` : 'No data entered'}
+                  <p className="text-muted-foreground text-sm">
+                    {bulkData.trim() ? `${bulkData.trim().split("\n").length} rows detected` : "No data entered"}
                   </p>
                   {bulkData.trim() && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setBulkData('')}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => setBulkData("")}>
                       Clear
                     </Button>
                   )}
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex space-x-3">
-                <Button 
-                  onClick={parseBulkData}
-                  disabled={!bulkData.trim()}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  {parsedEmployees.length > 0 ? 'Re-parse Data' : 'Parse Data'}
+                <Button onClick={parseBulkData} disabled={!bulkData.trim()} variant="outline" className="flex-1">
+                  {parsedEmployees.length > 0 ? "Re-parse Data" : "Parse Data"}
                 </Button>
                 {parsedEmployees.length > 0 && (
-                  <Button
-                    onClick={handleBulkImport}
-                    disabled={loading}
-                    className="flex-1"
-                  >
+                  <Button onClick={handleBulkImport} disabled={loading} className="flex-1">
                     {loading ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                         Importing...
                       </>
                     ) : (
@@ -291,64 +278,76 @@ export default function AddEmployeePage() {
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <CardTitle className="text-lg flex items-center">
+                        <CardTitle className="flex items-center text-lg">
                           <CheckCircle2 className="mr-2 h-5 w-5 text-green-600" />
                           Data Preview
                         </CardTitle>
                         <CardDescription>
-                          {parsedEmployees.filter(emp => !emp.error).length} valid employees, {parsedEmployees.filter(emp => emp.error).length} with errors
+                          {parsedEmployees.filter((emp) => !emp.error).length} valid employees,{" "}
+                          {parsedEmployees.filter((emp) => emp.error).length} with errors
                         </CardDescription>
                       </div>
                       <div className="flex space-x-2">
-                        {parsedEmployees.filter(emp => emp.error).length > 0 && (
-                          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-                            {parsedEmployees.filter(emp => emp.error).length} Errors
+                        {parsedEmployees.filter((emp) => emp.error).length > 0 && (
+                          <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
+                            {parsedEmployees.filter((emp) => emp.error).length} Errors
                           </span>
                         )}
-                        <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-                          {parsedEmployees.filter(emp => !emp.error).length} Ready
+                        <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+                          {parsedEmployees.filter((emp) => !emp.error).length} Ready
                         </span>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="max-h-[500px] overflow-y-auto border rounded-lg">
+                    <div className="max-h-[500px] overflow-y-auto rounded-lg border">
                       <table className="w-full text-sm">
                         <thead className="bg-muted/50 sticky top-0">
                           <tr>
-                            <th className="text-left p-3 font-medium">#</th>
-                            <th className="text-left p-3 font-medium">Email</th>
-                            <th className="text-left p-3 font-medium">Name</th>
-                            <th className="text-left p-3 font-medium">Department</th>
-                            <th className="text-left p-3 font-medium">Job Title</th>
-                            <th className="text-left p-3 font-medium">Status</th>
+                            <th className="p-3 text-left font-medium">#</th>
+                            <th className="p-3 text-left font-medium">Email</th>
+                            <th className="p-3 text-left font-medium">Name</th>
+                            <th className="p-3 text-left font-medium">Department</th>
+                            <th className="p-3 text-left font-medium">Job Title</th>
+                            <th className="p-3 text-left font-medium">Status</th>
                           </tr>
                         </thead>
                         <tbody>
                           {parsedEmployees.map((emp, index) => (
-                            <tr key={index} className={`border-b transition-colors hover:bg-muted/50 ${emp.error ? 'bg-red-50' : ''}`}>
+                            <tr
+                              key={index}
+                              className={`hover:bg-muted/50 border-b transition-colors ${emp.error ? "bg-red-50" : ""}`}
+                            >
                               <td className="p-3 font-medium">{emp.employee_number}</td>
-                              <td className="p-3">{emp.email_address || <span className="text-muted-foreground italic">No email</span>}</td>
+                              <td className="p-3">
+                                {emp.email_address || <span className="text-muted-foreground italic">No email</span>}
+                              </td>
                               <td className="p-3">
                                 <div>
-                                  <div className="font-medium">{emp.first_name} {emp.last_name}</div>
+                                  <div className="font-medium">
+                                    {emp.first_name} {emp.last_name}
+                                  </div>
                                   {emp.display_name && emp.display_name !== `${emp.first_name} ${emp.last_name}` && (
-                                    <div className="text-xs text-muted-foreground">({emp.display_name})</div>
+                                    <div className="text-muted-foreground text-xs">({emp.display_name})</div>
                                   )}
                                 </div>
                               </td>
-                              <td className="p-3">{emp.department || <span className="text-muted-foreground">—</span>}</td>
-                              <td className="p-3">{emp.job_title || <span className="text-muted-foreground">—</span>}</td>
+                              <td className="p-3">
+                                {emp.department || <span className="text-muted-foreground">—</span>}
+                              </td>
+                              <td className="p-3">
+                                {emp.job_title || <span className="text-muted-foreground">—</span>}
+                              </td>
                               <td className="p-3">
                                 {emp.error ? (
                                   <div className="flex items-center">
-                                    <AlertCircle className="h-4 w-4 text-red-500 mr-1" />
-                                    <span className="text-red-600 text-xs font-medium">Error</span>
+                                    <AlertCircle className="mr-1 h-4 w-4 text-red-500" />
+                                    <span className="text-xs font-medium text-red-600">Error</span>
                                   </div>
                                 ) : (
                                   <div className="flex items-center">
-                                    <CheckCircle2 className="h-4 w-4 text-green-500 mr-1" />
-                                    <span className="text-green-600 text-xs font-medium">Valid</span>
+                                    <CheckCircle2 className="mr-1 h-4 w-4 text-green-500" />
+                                    <span className="text-xs font-medium text-green-600">Valid</span>
                                   </div>
                                 )}
                               </td>
@@ -357,19 +356,21 @@ export default function AddEmployeePage() {
                         </tbody>
                       </table>
                     </div>
-                    
+
                     {/* Error Details */}
-                    {parsedEmployees.some(emp => emp.error) && (
-                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                        <h4 className="font-medium text-red-800 mb-2 flex items-center">
-                          <AlertCircle className="h-4 w-4 mr-1" />
+                    {parsedEmployees.some((emp) => emp.error) && (
+                      <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
+                        <h4 className="mb-2 flex items-center font-medium text-red-800">
+                          <AlertCircle className="mr-1 h-4 w-4" />
                           Data Issues Found
                         </h4>
                         <div className="space-y-1 text-sm text-red-700">
                           {parsedEmployees
-                            .filter(emp => emp.error)
+                            .filter((emp) => emp.error)
                             .map((emp, index) => (
-                              <div key={index}>Row {emp.employee_number}: {emp.error}</div>
+                              <div key={index}>
+                                Row {emp.employee_number}: {emp.error}
+                              </div>
                             ))}
                         </div>
                       </div>
@@ -379,47 +380,53 @@ export default function AddEmployeePage() {
               )}
 
               {importResults && (
-                <Alert className={`${importResults.failed === 0 ? "border-green-200 bg-green-50" : "border-orange-200 bg-orange-50"} border-l-4 ${importResults.failed === 0 ? "border-l-green-500" : "border-l-orange-500"}`}>
+                <Alert
+                  className={`${importResults.failed === 0 ? "border-green-200 bg-green-50" : "border-orange-200 bg-orange-50"} border-l-4 ${importResults.failed === 0 ? "border-l-green-500" : "border-l-orange-500"}`}
+                >
                   <div className="flex items-start space-x-3">
                     {importResults.failed === 0 ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 text-green-600" />
                     ) : (
-                      <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
+                      <AlertCircle className="mt-0.5 h-5 w-5 text-orange-600" />
                     )}
                     <div className="flex-1">
                       <AlertDescription>
                         <div className="space-y-3">
                           <div>
-                            <h4 className={`font-semibold ${importResults.failed === 0 ? "text-green-800" : "text-orange-800"}`}>
-                              {importResults.failed === 0 ? "Import Completed Successfully!" : "Import Completed with Issues"}
+                            <h4
+                              className={`font-semibold ${importResults.failed === 0 ? "text-green-800" : "text-orange-800"}`}
+                            >
+                              {importResults.failed === 0
+                                ? "Import Completed Successfully!"
+                                : "Import Completed with Issues"}
                             </h4>
                             <div className="mt-2 flex space-x-4 text-sm">
-                              <span className="flex items-center px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                                <CheckCircle2 className="h-3 w-3 mr-1" />
+                              <span className="flex items-center rounded-full bg-green-100 px-2 py-1 text-green-800">
+                                <CheckCircle2 className="mr-1 h-3 w-3" />
                                 {importResults.success} successful
                               </span>
                               {importResults.failed > 0 && (
-                                <span className="flex items-center px-2 py-1 bg-red-100 text-red-800 rounded-full">
-                                  <AlertCircle className="h-3 w-3 mr-1" />
+                                <span className="flex items-center rounded-full bg-red-100 px-2 py-1 text-red-800">
+                                  <AlertCircle className="mr-1 h-3 w-3" />
                                   {importResults.failed} failed
                                 </span>
                               )}
                             </div>
                           </div>
-                          
+
                           {importResults.errors.length > 0 && (
-                            <div className="bg-white/80 border rounded-lg p-3">
-                              <p className="font-medium text-sm mb-2">Error Details:</p>
-                              <div className="max-h-32 overflow-y-auto space-y-1">
+                            <div className="rounded-lg border bg-white/80 p-3">
+                              <p className="mb-2 text-sm font-medium">Error Details:</p>
+                              <div className="max-h-32 space-y-1 overflow-y-auto">
                                 {importResults.errors.map((error, index) => (
-                                  <div key={index} className="text-sm text-red-700 bg-red-50 px-2 py-1 rounded">
+                                  <div key={index} className="rounded bg-red-50 px-2 py-1 text-sm text-red-700">
                                     {error}
                                   </div>
                                 ))}
                               </div>
                             </div>
                           )}
-                          
+
                           {importResults.success > 0 && importResults.failed === 0 && (
                             <p className="text-sm text-green-700">
                               🎉 All employees have been successfully added! Redirecting to employee list...
@@ -442,13 +449,11 @@ export default function AddEmployeePage() {
                 <Plus className="mr-2 h-5 w-5" />
                 Add Single Employee
               </CardTitle>
-              <CardDescription>
-                Enter employee information manually
-              </CardDescription>
+              <CardDescription>Enter employee information manually</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSingleEmployeeSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
                     <Label htmlFor="email">Email Address *</Label>
                     <Input
@@ -456,7 +461,7 @@ export default function AddEmployeePage() {
                       type="email"
                       required
                       value={singleEmployee.email_address}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, email_address: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, email_address: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -465,7 +470,7 @@ export default function AddEmployeePage() {
                       id="firstName"
                       required
                       value={singleEmployee.first_name}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, first_name: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, first_name: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -473,7 +478,7 @@ export default function AddEmployeePage() {
                     <Input
                       id="lastName"
                       value={singleEmployee.last_name}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, last_name: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, last_name: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -481,7 +486,7 @@ export default function AddEmployeePage() {
                     <Input
                       id="displayName"
                       value={singleEmployee.display_name}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, display_name: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, display_name: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -489,7 +494,7 @@ export default function AddEmployeePage() {
                     <Input
                       id="department"
                       value={singleEmployee.department}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, department: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, department: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -497,7 +502,7 @@ export default function AddEmployeePage() {
                     <Input
                       id="officePhone"
                       value={singleEmployee.office_phone}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, office_phone: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, office_phone: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -505,7 +510,7 @@ export default function AddEmployeePage() {
                     <Input
                       id="mobilePhone"
                       value={singleEmployee.mobile_phone}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, mobile_phone: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, mobile_phone: e.target.value }))}
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -513,11 +518,11 @@ export default function AddEmployeePage() {
                     <Input
                       id="jobTitle"
                       value={singleEmployee.job_title}
-                      onChange={(e) => setSingleEmployee(prev => ({ ...prev, job_title: e.target.value }))}
+                      onChange={(e) => setSingleEmployee((prev) => ({ ...prev, job_title: e.target.value }))}
                     />
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end space-x-2">
                   <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel

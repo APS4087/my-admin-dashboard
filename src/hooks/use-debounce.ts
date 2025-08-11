@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 /**
  * Custom hook that debounces a value by a specified delay
  * Useful for search inputs to avoid excessive API calls
- * 
+ *
  * @param value - The value to debounce
  * @param delay - The delay in milliseconds
  * @returns The debounced value

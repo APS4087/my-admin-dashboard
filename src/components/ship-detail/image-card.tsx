@@ -29,7 +29,7 @@ export function ImageCard({ ship }: ImageCardProps) {
           setImage({
             url: cached.imageUrl,
             source: "VesselFinder",
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
           setLoading(false);
           return;
@@ -37,16 +37,16 @@ export function ImageCard({ ship }: ImageCardProps) {
 
         // Load fresh data
         const trackingData = await optimizedShipDetailService.loadTrackingData(ship);
-        
+
         if (isMounted) {
           setImage(trackingData.image || null);
           setImageUrl(trackingData.image?.url || null);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error loading ship image:', error);
+        console.error("Error loading ship image:", error);
         if (isMounted) {
-          setError('Failed to load ship image');
+          setError("Failed to load ship image");
           setLoading(false);
         }
       }
@@ -69,7 +69,7 @@ export function ImageCard({ ship }: ImageCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Skeleton className="w-full h-64 rounded-lg" />
+          <Skeleton className="h-64 w-full rounded-lg" />
         </CardContent>
       </Card>
     );
@@ -85,12 +85,10 @@ export function ImageCard({ ship }: ImageCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="w-full h-64 bg-muted rounded-lg flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <Camera className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">
-                {error || "No image available"}
-              </p>
+          <div className="bg-muted flex h-64 w-full items-center justify-center rounded-lg">
+            <div className="text-muted-foreground text-center">
+              <Camera className="mx-auto mb-2 h-12 w-12 opacity-50" />
+              <p className="text-sm">{error || "No image available"}</p>
             </div>
           </div>
         </CardContent>
@@ -108,27 +106,27 @@ export function ImageCard({ ship }: ImageCardProps) {
         <CardDescription>Latest vessel photograph</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="relative w-full h-64 rounded-lg overflow-hidden">
+        <div className="relative h-64 w-full overflow-hidden rounded-lg">
           <Image
             src={imageUrl}
-            alt={`${ship.ship_email.split('@')[0]} vessel`}
+            alt={`${ship.ship_email.split("@")[0]} vessel`}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
-        
+
         {image && (
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="text-muted-foreground flex items-center justify-between text-sm">
             <div className="flex items-center space-x-1">
               <span>Source: {image.source}</span>
             </div>
             {ship.vesselfinder_url && (
-              <a 
+              <a
                 href={ship.vesselfinder_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-1 hover:text-foreground transition-colors"
+                className="hover:text-foreground flex items-center space-x-1 transition-colors"
               >
                 <ExternalLink className="h-4 w-4" />
                 <span>View on VesselFinder</span>
@@ -136,11 +134,9 @@ export function ImageCard({ ship }: ImageCardProps) {
             )}
           </div>
         )}
-        
+
         {image?.timestamp && (
-          <p className="text-xs text-muted-foreground">
-            Captured: {new Date(image.timestamp).toLocaleString()}
-          </p>
+          <p className="text-muted-foreground text-xs">Captured: {new Date(image.timestamp).toLocaleString()}</p>
         )}
       </CardContent>
     </Card>

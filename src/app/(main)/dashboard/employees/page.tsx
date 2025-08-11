@@ -6,14 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, MoreHorizontal, Edit, Trash2, Eye } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,12 +36,24 @@ function EmployeeTableSkeleton() {
       <TableBody>
         {Array.from({ length: 5 }).map((_, i) => (
           <TableRow key={i}>
-            <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-32" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-            <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-            <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-16" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-32" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-48" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-24" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-28" />
+            </TableCell>
+            <TableCell className="text-right">
+              <Skeleton className="ml-auto h-8 w-8" />
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
@@ -61,7 +66,7 @@ function EmployeesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Debounce search term to avoid too many API calls
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -72,7 +77,7 @@ function EmployeesPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const data = await employeeService.getAllEmployees({
         search: debouncedSearchTerm || undefined,
       });
@@ -89,35 +94,33 @@ function EmployeesPage() {
     fetchEmployees();
   }, [fetchEmployees]);
 
-  const handleDelete = useCallback(async (id: string) => {
-    if (confirm("Are you sure you want to delete this employee?")) {
-      try {
-        // Optimistic update
-        setEmployees(prev => prev.filter(emp => emp.id !== id));
-        
-        await employeeService.deleteEmployee(id);
-      } catch (error) {
-        // Revert optimistic update on error
-        fetchEmployees();
-        console.error("Failed to delete employee:", error);
+  const handleDelete = useCallback(
+    async (id: string) => {
+      if (confirm("Are you sure you want to delete this employee?")) {
+        try {
+          // Optimistic update
+          setEmployees((prev) => prev.filter((emp) => emp.id !== id));
+
+          await employeeService.deleteEmployee(id);
+        } catch (error) {
+          // Revert optimistic update on error
+          fetchEmployees();
+          console.error("Failed to delete employee:", error);
+        }
       }
-    }
-  }, [employeeService, fetchEmployees]);
+    },
+    [employeeService, fetchEmployees],
+  );
 
   if (error) {
     return (
       <div className="space-y-6">
         <Card className="border-destructive">
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">
+            <div className="text-destructive text-center">
               <p className="font-medium">Error loading employees</p>
-              <p className="text-sm text-muted-foreground mt-1">{error}</p>
-              <Button 
-                onClick={fetchEmployees} 
-                variant="outline" 
-                size="sm" 
-                className="mt-3"
-              >
+              <p className="text-muted-foreground mt-1 text-sm">{error}</p>
+              <Button onClick={fetchEmployees} variant="outline" size="sm" className="mt-3">
                 Try Again
               </Button>
             </div>
@@ -132,9 +135,7 @@ function EmployeesPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Employees</h1>
-          <p className="text-muted-foreground">
-            Manage your company's employee records and information
-          </p>
+          <p className="text-muted-foreground">Manage your company's employee records and information</p>
         </div>
         <Link href="/dashboard/employees/add">
           <Button>
@@ -153,20 +154,20 @@ function EmployeesPage() {
                 A list of all employees in your organization
                 {employees.length > 0 && (
                   <span className="ml-2">
-                    ({employees.length} employee{employees.length !== 1 ? 's' : ''}
-                    {employees.length === 100 && ', showing first 100'})
+                    ({employees.length} employee{employees.length !== 1 ? "s" : ""}
+                    {employees.length === 100 && ", showing first 100"})
                   </span>
                 )}
               </CardDescription>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:space-x-2">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
                 <Input
                   placeholder="Search employees..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8 w-full sm:w-[300px] lg:w-[350px] xl:w-[400px]"
+                  className="w-full pl-8 sm:w-[300px] lg:w-[350px] xl:w-[400px]"
                 />
               </div>
             </div>
@@ -187,13 +188,13 @@ function EmployeesPage() {
                     <TableHead className="min-w-[250px]">Email</TableHead>
                     <TableHead className="min-w-[150px]">Department</TableHead>
                     <TableHead className="min-w-[180px]">Job Title</TableHead>
-                    <TableHead className="text-right min-w-[80px]">Actions</TableHead>
+                    <TableHead className="min-w-[80px] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {employees.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
+                      <TableCell colSpan={6} className="py-8 text-center">
                         <div className="text-muted-foreground">
                           {searchTerm ? (
                             <>
@@ -223,27 +224,25 @@ function EmployeesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="min-w-0">
-                            <Link 
+                            <Link
                               href={`/dashboard/employees/${employee.id}`}
-                              className="font-medium hover:text-primary transition-colors truncate block"
+                              className="hover:text-primary block truncate font-medium transition-colors"
                             >
                               {employee.first_name} {employee.last_name}
                             </Link>
                             {employee.display_name && (
-                              <div className="text-sm text-muted-foreground truncate">
-                                {employee.display_name}
-                              </div>
+                              <div className="text-muted-foreground truncate text-sm">{employee.display_name}</div>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="truncate block">{employee.email_address}</span>
+                          <span className="block truncate">{employee.email_address}</span>
                         </TableCell>
                         <TableCell>
-                          <span className="truncate block">{employee.department || "—"}</span>
+                          <span className="block truncate">{employee.department || "—"}</span>
                         </TableCell>
                         <TableCell>
-                          <span className="truncate block">{employee.job_title || "—"}</span>
+                          <span className="block truncate">{employee.job_title || "—"}</span>
                         </TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
@@ -263,10 +262,7 @@ function EmployeesPage() {
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600"
-                                onClick={() => handleDelete(employee.id)}
-                              >
+                              <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(employee.id)}>
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete
                               </DropdownMenuItem>

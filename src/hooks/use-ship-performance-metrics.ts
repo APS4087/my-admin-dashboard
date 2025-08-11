@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { optimizedShipService } from '@/lib/optimized-ship-service';
+import { useEffect, useState } from "react";
+import { optimizedShipService } from "@/lib/optimized-ship-service";
 
 interface PerformanceMetrics {
   cacheHitRate: number;
@@ -15,14 +15,16 @@ export function useShipPerformanceMetrics() {
   useEffect(() => {
     const updateMetrics = () => {
       const cacheStats = optimizedShipService.getCacheStats();
-      
+
       setMetrics({
-        cacheHitRate: cacheStats.memoryEntries > 0 ? 
-          (cacheStats.memoryEntries / (cacheStats.memoryEntries + cacheStats.storageEntries)) * 100 : 0,
+        cacheHitRate:
+          cacheStats.memoryEntries > 0
+            ? (cacheStats.memoryEntries / (cacheStats.memoryEntries + cacheStats.storageEntries)) * 100
+            : 0,
         averageLoadTime: 0, // Would need to implement timing
         totalShips: cacheStats.memoryEntries + cacheStats.storageEntries,
         cachedShips: cacheStats.memoryEntries,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       });
     };
 

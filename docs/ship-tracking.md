@@ -5,12 +5,14 @@ This application includes comprehensive ship tracking and monitoring capabilitie
 ## Features
 
 ### 🚢 Ship Information
+
 - Authentication credentials (email, passwords)
 - Vessel details (name, type, flag, dimensions)
 - Status tracking (active/inactive)
 - Creation and modification history
 
 ### 📍 Real-time Location Tracking
+
 - GPS coordinates (latitude/longitude)
 - Speed and course information
 - Current status (Underway, At anchor, Moored)
@@ -19,6 +21,7 @@ This application includes comprehensive ship tracking and monitoring capabilitie
 - MMSI and IMO numbers
 
 ### 📸 Ship Images
+
 - Latest satellite/aerial imagery
 - Image source attribution
 - Timestamp information
@@ -29,12 +32,14 @@ This application includes comprehensive ship tracking and monitoring capabilitie
 The application is designed to integrate with multiple ship tracking APIs:
 
 ### Supported APIs
+
 1. **MarineTraffic API** - Primary vessel tracking
 2. **VesselFinder API** - Ship images and details
 3. **AIS Marine API** - Alternative tracking data
 4. **ShipTracker API** - Additional vessel information
 
 ### Current Implementation
+
 - **Demo Mode**: Currently uses mock data for demonstration
 - **Consistent Data**: Mock data is generated consistently based on ship email
 - **Realistic Values**: Speed, course, and coordinates use realistic ranges
@@ -45,6 +50,7 @@ The application is designed to integrate with multiple ship tracking APIs:
 To enable real ship tracking:
 
 1. **Get API Keys**:
+
    ```bash
    # Sign up for services:
    # - MarineTraffic: https://www.marinetraffic.com/en/ais-api-services
@@ -52,10 +58,11 @@ To enable real ship tracking:
    ```
 
 2. **Configure Environment**:
+
    ```bash
    # Copy .env.example to .env.local
    cp .env.example .env.local
-   
+
    # Add your API keys
    NEXT_PUBLIC_MARINE_TRAFFIC_API_KEY=your_key_here
    NEXT_PUBLIC_VESSEL_FINDER_API_KEY=your_key_here
@@ -107,7 +114,7 @@ The ship details page includes:
 
 ## Security Notes
 
-- API keys are client-side (NEXT_PUBLIC_*) for demo purposes
+- API keys are client-side (NEXT*PUBLIC*\*) for demo purposes
 - In production, proxy API calls through backend services
 - Never expose sensitive API keys in client code
 - Implement proper authentication for ship data access

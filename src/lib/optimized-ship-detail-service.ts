@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/client'
-import type { Ship } from '@/types/ship'
-import { optimizedShipService } from './optimized-ship-service'
-import { shipCache } from './ship-cache-service'
-import { shipTrackingService, type ShipLocation, type ShipImage, type ShipDetails } from './ship-tracking-service'
+import { createClient } from "@/lib/supabase/client";
+import type { Ship } from "@/types/ship";
+import { optimizedShipService } from "./optimized-ship-service";
+import { shipCache } from "./ship-cache-service";
+import { shipTrackingService, type ShipLocation, type ShipImage, type ShipDetails } from "./ship-tracking-service";
 
 export interface ShipDetailData {
   ship: Ship;
@@ -17,27 +17,23 @@ export interface ShipDetailData {
 }
 
 export class OptimizedShipDetailService {
-  private supabase = createClient()
+  private supabase = createClient();
 
   /**
    * Get basic ship data immediately (from cache or DB)
    */
   async getShipBasic(shipId: string): Promise<Ship | null> {
     try {
-      const { data, error } = await this.supabase
-        .from('ships')
-        .select('*')
-        .eq('id', shipId)
-        .single()
+      const { data, error } = await this.supabase.from("ships").select("*").eq("id", shipId).single();
 
       if (error) {
-        throw new Error(`Failed to fetch ship: ${error.message}`)
+        throw new Error(`Failed to fetch ship: ${error.message}`);
       }
 
-      return data
+      return data;
     } catch (error) {
-      console.error('Error fetching basic ship data:', error)
-      return null
+      console.error("Error fetching basic ship data:", error);
+      return null;
     }
   }
 
@@ -50,7 +46,7 @@ export class OptimizedShipDetailService {
     shipName?: string;
     trackingDetails?: ShipDetails;
   } | null {
-    return shipCache.get(shipId)
+    return shipCache.get(shipId);
   }
 
   /**
@@ -63,66 +59,76 @@ export class OptimizedShipDetailService {
   }> {
     try {
       // Check cache first
-      const cached = shipCache.get(ship.id)
+      const cached = shipCache.get(ship.id);
       if (cached) {
         return {
           location: cached.location,
-          image: cached.imageUrl ? {
-            url: cached.imageUrl,
-            source: "VesselFinder",
-            timestamp: new Date().toISOString()
-          } : undefined,
-          details: cached.trackingDetails
-        }
+          image: cached.imageUrl
+            ? {
+                url: cached.imageUrl,
+                source: "VesselFinder",
+                timestamp: new Date().toISOString(),
+              }
+            : undefined,
+          details: cached.trackingDetails,
+        };
       }
 
       // If no vesselfinder URL, return basic data
       if (!ship.vesselfinder_url) {
         const basicData = {
           details: {
-            name: this.generateShipNameFromEmail(ship.ship_email)
-          }
-        }
+            name: this.generateShipNameFromEmail(ship.ship_email),
+          },
+        };
         // Cache basic data
-        shipCache.set(ship.id, {
-          shipName: basicData.details.name
-        }, 10 * 60 * 1000)
-        return basicData
+        shipCache.set(
+          ship.id,
+          {
+            shipName: basicData.details.name,
+          },
+          10 * 60 * 1000,
+        );
+        return basicData;
       }
 
       // Fetch fresh tracking data
-      const trackingData = await shipTrackingService.getAllShipDataFromURL(ship.vesselfinder_url)
-      
+      const trackingData = await shipTrackingService.getAllShipDataFromURL(ship.vesselfinder_url);
+
       const result = {
         location: trackingData.location || undefined,
         image: trackingData.image || undefined,
         details: trackingData.details || {
-          name: this.generateShipNameFromEmail(ship.ship_email)
+          name: this.generateShipNameFromEmail(ship.ship_email),
         },
-      }
+      };
 
       // Cache the result
       shipCache.set(ship.id, {
         location: result.location,
         imageUrl: result.image?.url,
         shipName: result.details?.name,
-        trackingDetails: result.details
-      })
+        trackingDetails: result.details,
+      });
 
-      return result
+      return result;
     } catch (error) {
-      console.error(`Error loading tracking data for ship ${ship.ship_email}:`, error)
-      
+      console.error(`Error loading tracking data for ship ${ship.ship_email}:`, error);
+
       // Cache error state to avoid repeated failures
       const errorData = {
         details: {
-          name: this.generateShipNameFromEmail(ship.ship_email)
-        }
-      }
-      shipCache.set(ship.id, {
-        shipName: errorData.details.name
-      }, 2 * 60 * 1000) // Cache errors for 2 minutes
-      return errorData
+          name: this.generateShipNameFromEmail(ship.ship_email),
+        },
+      };
+      shipCache.set(
+        ship.id,
+        {
+          shipName: errorData.details.name,
+        },
+        2 * 60 * 1000,
+      ); // Cache errors for 2 minutes
+      return errorData;
     }
   }
 
@@ -135,18 +141,18 @@ export class OptimizedShipDetailService {
     loadTrackingData: () => Promise<any>;
   }> {
     // 1. Load basic ship data first (fast)
-    const basicData = await this.getShipBasic(shipId)
-    
+    const basicData = await this.getShipBasic(shipId);
+
     if (!basicData) {
-      throw new Error('Ship not found')
+      throw new Error("Ship not found");
     }
 
     // 2. Return basic data immediately with helper functions for progressive loading
     return {
       basicData,
       getCachedData: () => this.getCachedTrackingData(shipId),
-      loadTrackingData: () => this.loadTrackingData(basicData)
-    }
+      loadTrackingData: () => this.loadTrackingData(basicData),
+    };
   }
 
   /**
@@ -156,9 +162,9 @@ export class OptimizedShipDetailService {
     // Only preload if not already cached
     if (!shipCache.has(ship.id)) {
       // Load in background without waiting
-      this.loadTrackingData(ship).catch(error => {
-        console.error('Background preload failed:', error)
-      })
+      this.loadTrackingData(ship).catch((error) => {
+        console.error("Background preload failed:", error);
+      });
     }
   }
 
@@ -206,7 +212,7 @@ export class OptimizedShipDetailService {
    * Clear cache for a specific ship
    */
   clearShipCache(shipId: string): void {
-    shipCache.delete(shipId)
+    shipCache.delete(shipId);
   }
 }
 

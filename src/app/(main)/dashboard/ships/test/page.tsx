@@ -41,7 +41,7 @@ export default function VesselScrapingTest() {
 
     try {
       const response = await fetch(`/api/scrape-vessel?query=${encodeURIComponent(searchTerm)}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -51,10 +51,10 @@ export default function VesselScrapingTest() {
       if (result.success) {
         setResults(result.data || []);
       } else {
-        setError(result.error || 'Failed to fetch vessel data');
+        setError(result.error || "Failed to fetch vessel data");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -68,14 +68,14 @@ export default function VesselScrapingTest() {
     setUrlResult(null);
 
     try {
-      const response = await fetch('/api/test-scraping', {
-        method: 'POST',
+      const response = await fetch("/api/test-scraping", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ url: vesselfinderUrl }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -85,41 +85,37 @@ export default function VesselScrapingTest() {
       if (result.success && result.result?.data) {
         setUrlResult(result.result.data);
       } else {
-        setError(result.error || 'Failed to scrape VesselFinder data');
+        setError(result.error || "Failed to scrape VesselFinder data");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setUrlLoading(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold">VesselFinder Scraping Test</h1>
-        <p className="text-muted-foreground">
-          Test the vessel scraping API that extracts data from VesselFinder.com
-        </p>
+        <p className="text-muted-foreground">Test the vessel scraping API that extracts data from VesselFinder.com</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Search Vessels</CardTitle>
-          <CardDescription>
-            Enter a ship name, MMSI, or captain email to search for vessel information
-          </CardDescription>
+          <CardDescription>Enter a ship name, MMSI, or captain email to search for vessel information</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex space-x-2">
             <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
               <Input
                 placeholder="Search for ships (e.g., 'captain.anderson', 'MAERSK', '123456789')..."
                 value={searchTerm}
@@ -133,20 +129,14 @@ export default function VesselScrapingTest() {
             </Button>
           </div>
 
-          {error && (
-            <div className="text-red-600 text-sm">
-              Error: {error}
-            </div>
-          )}
+          {error && <div className="text-sm text-red-600">Error: {error}</div>}
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>Test VesselFinder URL Scraping</CardTitle>
-          <CardDescription>
-            Test scraping vessel data directly from a VesselFinder.com URL
-          </CardDescription>
+          <CardDescription>Test scraping vessel data directly from a VesselFinder.com URL</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex space-x-2">
@@ -163,36 +153,40 @@ export default function VesselScrapingTest() {
             </Button>
           </div>
 
-          {error && (
-            <div className="text-red-600 text-sm">
-              Error: {error}
-            </div>
-          )}
+          {error && <div className="text-sm text-red-600">Error: {error}</div>}
 
           {urlResult && (
             <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-3">Scraped Data from VesselFinder</h3>
+              <h3 className="mb-3 text-lg font-semibold">Scraped Data from VesselFinder</h3>
               <Card>
                 <CardContent className="pt-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <div className="flex items-center space-x-2">
                         <ShipIcon className="h-5 w-5 text-blue-500" />
-                        <span className="font-semibold text-lg">{urlResult.name || 'Unknown Vessel'}</span>
+                        <span className="text-lg font-semibold">{urlResult.name || "Unknown Vessel"}</span>
                       </div>
-                      
+
                       <div className="space-y-1 text-sm">
                         {urlResult.mmsi && (
-                          <div><span className="font-medium">MMSI:</span> {urlResult.mmsi}</div>
+                          <div>
+                            <span className="font-medium">MMSI:</span> {urlResult.mmsi}
+                          </div>
                         )}
                         {urlResult.imo && (
-                          <div><span className="font-medium">IMO:</span> {urlResult.imo}</div>
+                          <div>
+                            <span className="font-medium">IMO:</span> {urlResult.imo}
+                          </div>
                         )}
                         {urlResult.type && (
-                          <div><span className="font-medium">Type:</span> {urlResult.type}</div>
+                          <div>
+                            <span className="font-medium">Type:</span> {urlResult.type}
+                          </div>
                         )}
                         {urlResult.flag && (
-                          <div><span className="font-medium">Flag:</span> {urlResult.flag}</div>
+                          <div>
+                            <span className="font-medium">Flag:</span> {urlResult.flag}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -203,21 +197,29 @@ export default function VesselScrapingTest() {
                           <MapPin className="h-5 w-5 text-green-500" />
                           <span className="font-semibold">Location</span>
                         </div>
-                        
+
                         <div className="space-y-1 text-sm">
                           <div>
-                            <span className="font-medium">Coordinates:</span>{" "}
-                            {urlResult.location.latitude.toFixed(4)}°, {urlResult.location.longitude.toFixed(4)}°
+                            <span className="font-medium">Coordinates:</span> {urlResult.location.latitude.toFixed(4)}°,{" "}
+                            {urlResult.location.longitude.toFixed(4)}°
                           </div>
                           {urlResult.location.port && (
-                            <div><span className="font-medium">Port:</span> {urlResult.location.port}</div>
+                            <div>
+                              <span className="font-medium">Port:</span> {urlResult.location.port}
+                            </div>
                           )}
                           {urlResult.location.destination && (
-                            <div><span className="font-medium">Destination:</span> {urlResult.location.destination}</div>
+                            <div>
+                              <span className="font-medium">Destination:</span> {urlResult.location.destination}
+                            </div>
                           )}
                           <div className="flex items-center space-x-4">
-                            <span><span className="font-medium">Speed:</span> {urlResult.location.speed} knots</span>
-                            <span><span className="font-medium">Course:</span> {urlResult.location.course}°</span>
+                            <span>
+                              <span className="font-medium">Speed:</span> {urlResult.location.speed} knots
+                            </span>
+                            <span>
+                              <span className="font-medium">Course:</span> {urlResult.location.course}°
+                            </span>
                           </div>
                           <div className="flex items-center space-x-2">
                             {urlResult.location.status === "Underway" && (
@@ -244,25 +246,33 @@ export default function VesselScrapingTest() {
           {results.map((vessel, index) => (
             <Card key={index}>
               <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <ShipIcon className="h-5 w-5 text-blue-500" />
-                      <span className="font-semibold text-lg">{vessel.name || 'Unknown Vessel'}</span>
+                      <span className="text-lg font-semibold">{vessel.name || "Unknown Vessel"}</span>
                     </div>
-                    
+
                     <div className="space-y-1 text-sm">
                       {vessel.mmsi && (
-                        <div><span className="font-medium">MMSI:</span> {vessel.mmsi}</div>
+                        <div>
+                          <span className="font-medium">MMSI:</span> {vessel.mmsi}
+                        </div>
                       )}
                       {vessel.imo && (
-                        <div><span className="font-medium">IMO:</span> {vessel.imo}</div>
+                        <div>
+                          <span className="font-medium">IMO:</span> {vessel.imo}
+                        </div>
                       )}
                       {vessel.type && (
-                        <div><span className="font-medium">Type:</span> {vessel.type}</div>
+                        <div>
+                          <span className="font-medium">Type:</span> {vessel.type}
+                        </div>
                       )}
                       {vessel.flag && (
-                        <div><span className="font-medium">Flag:</span> {vessel.flag}</div>
+                        <div>
+                          <span className="font-medium">Flag:</span> {vessel.flag}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -273,26 +283,32 @@ export default function VesselScrapingTest() {
                         <MapPin className="h-5 w-5 text-green-500" />
                         <span className="font-semibold">Location</span>
                       </div>
-                      
+
                       <div className="space-y-1 text-sm">
                         <div>
-                          <span className="font-medium">Coordinates:</span>{" "}
-                          {vessel.location.latitude.toFixed(4)}°, {vessel.location.longitude.toFixed(4)}°
+                          <span className="font-medium">Coordinates:</span> {vessel.location.latitude.toFixed(4)}°,{" "}
+                          {vessel.location.longitude.toFixed(4)}°
                         </div>
                         {vessel.location.port && (
-                          <div><span className="font-medium">Port:</span> {vessel.location.port}</div>
+                          <div>
+                            <span className="font-medium">Port:</span> {vessel.location.port}
+                          </div>
                         )}
                         {vessel.location.destination && (
-                          <div><span className="font-medium">Destination:</span> {vessel.location.destination}</div>
+                          <div>
+                            <span className="font-medium">Destination:</span> {vessel.location.destination}
+                          </div>
                         )}
                         <div className="flex items-center space-x-4">
-                          <span><span className="font-medium">Speed:</span> {vessel.location.speed} knots</span>
-                          <span><span className="font-medium">Course:</span> {vessel.location.course}°</span>
+                          <span>
+                            <span className="font-medium">Speed:</span> {vessel.location.speed} knots
+                          </span>
+                          <span>
+                            <span className="font-medium">Course:</span> {vessel.location.course}°
+                          </span>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {vessel.location.status === "Underway" && (
-                            <Navigation className="h-4 w-4 text-blue-500" />
-                          )}
+                          {vessel.location.status === "Underway" && <Navigation className="h-4 w-4 text-blue-500" />}
                           <Badge variant={vessel.location.status === "Underway" ? "default" : "secondary"}>
                             {vessel.location.status}
                           </Badge>
@@ -310,7 +326,7 @@ export default function VesselScrapingTest() {
       {!loading && results.length === 0 && searchTerm && !error && (
         <Card>
           <CardContent className="pt-6 text-center">
-            <ShipIcon className="mx-auto h-12 w-12 mb-4 text-muted-foreground/50" />
+            <ShipIcon className="text-muted-foreground/50 mx-auto mb-4 h-12 w-12" />
             <p className="text-muted-foreground">No vessels found for "{searchTerm}"</p>
           </CardContent>
         </Card>

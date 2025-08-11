@@ -13,13 +13,13 @@ export default function DashboardPage() {
     total: 0,
     active: 0,
     inactive: 0,
-    departments: 0
+    departments: 0,
   });
 
   const [shipStats, setShipStats] = useState({
     total: 0,
     active: 0,
-    inactive: 0
+    inactive: 0,
   });
 
   const [shipAuthStats, setShipAuthStats] = useState({
@@ -27,7 +27,7 @@ export default function DashboardPage() {
     active: 0,
     inactive: 0,
     linked: 0,
-    unlinked: 0
+    unlinked: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -37,13 +37,13 @@ export default function DashboardPage() {
         const [employeeData, shipData, shipAuthData] = await Promise.all([
           employeeService.getEmployeeStats(),
           shipService.getStats(),
-          shipAuthService.getStats()
+          shipAuthService.getStats(),
         ]);
         setEmployeeStats(employeeData);
         setShipStats(shipData);
         setShipAuthStats(shipAuthData);
       } catch (error) {
-        console.error('Failed to load stats:', error);
+        console.error("Failed to load stats:", error);
       } finally {
         setLoading(false);
       }
@@ -55,12 +55,12 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8">
           {[...Array(8)].map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
+                <div className="h-8 w-1/2 rounded bg-gray-200"></div>
               </CardHeader>
             </Card>
           ))}
@@ -74,19 +74,17 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Fleet & Crew Management Dashboard</h1>
-          <p className="text-muted-foreground">
-            Overview of your company's employees and fleet operations
-          </p>
+          <p className="text-muted-foreground">Overview of your company's employees and fleet operations</p>
         </div>
       </div>
 
       {/* Employee Statistics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
           <Users className="h-5 w-5" />
           Employee Statistics
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 xl:grid-cols-4">
           <StatsCard
             title="Total Employees"
             icon={<Users className="h-4 w-4" />}
@@ -120,11 +118,11 @@ export default function DashboardPage() {
 
       {/* Ship Statistics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
           <Ship className="h-5 w-5" />
           Fleet Statistics
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 xl:grid-cols-4">
           <StatsCard
             title="Total Ships"
             icon={<Ship className="h-4 w-4" />}
@@ -158,11 +156,11 @@ export default function DashboardPage() {
 
       {/* Ship Authentication Statistics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
           <Key className="h-5 w-5" />
           Ship Authentication Statistics
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 lg:gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6 xl:grid-cols-4">
           <StatsCard
             title="Total Accounts"
             icon={<Key className="h-4 w-4" />}
@@ -194,28 +192,28 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6 xl:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions - Employees</CardTitle>
             <CardDescription>Common employee management tasks</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
-              onClick={() => window.location.href = '/dashboard/employees/add'}
+            <div
+              className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded p-2 transition-colors"
+              onClick={() => (window.location.href = "/dashboard/employees/add")}
             >
               <span>Add New Employee</span>
               <Badge variant="outline">+ Add</Badge>
             </div>
-            <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
-              onClick={() => window.location.href = '/dashboard/employees'}
+            <div
+              className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded p-2 transition-colors"
+              onClick={() => (window.location.href = "/dashboard/employees")}
             >
               <span>View All Employees</span>
               <Badge variant="outline">View</Badge>
             </div>
-            <div className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors">
+            <div className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded p-2 transition-colors">
               <span>Department Overview</span>
               <Badge variant="outline">Analyze</Badge>
             </div>
@@ -228,23 +226,23 @@ export default function DashboardPage() {
             <CardDescription>Fleet management operations</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
-              onClick={() => window.location.href = '/dashboard/ships/add'}
+            <div
+              className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded p-2 transition-colors"
+              onClick={() => (window.location.href = "/dashboard/ships/add")}
             >
               <span>Add New Ship</span>
               <Badge variant="outline">+ Add</Badge>
             </div>
-            <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
-              onClick={() => window.location.href = '/dashboard/ships'}
+            <div
+              className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded p-2 transition-colors"
+              onClick={() => (window.location.href = "/dashboard/ships")}
             >
               <span>View Fleet Directory</span>
               <Badge variant="outline">View</Badge>
             </div>
-            <div 
-              className="flex items-center justify-between cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors"
-              onClick={() => window.location.href = '/dashboard/ships/auth'}
+            <div
+              className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded p-2 transition-colors"
+              onClick={() => (window.location.href = "/dashboard/ships/auth")}
             >
               <span>Ship Authentication</span>
               <Badge variant="outline">Manage</Badge>
@@ -295,20 +293,18 @@ function StatsCard({ title, icon, value, description, color = "default" }: Stats
     success: "text-green-600 bg-green-50",
     destructive: "text-red-600 bg-red-50",
     warning: "text-yellow-600 bg-yellow-50",
-    secondary: "text-gray-600 bg-gray-50"
+    secondary: "text-gray-600 bg-gray-50",
   };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className={`p-2 rounded-md ${colorClasses[color]}`}>
-          {icon}
-        </div>
+        <div className={`rounded-md p-2 ${colorClasses[color]}`}>{icon}</div>
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-muted-foreground text-xs">{description}</p>
       </CardContent>
     </Card>
   );

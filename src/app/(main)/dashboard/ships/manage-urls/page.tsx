@@ -43,10 +43,10 @@ export default function VesselURLManager() {
           type: "Container Ship",
           flag: "Panama",
           mmsi: "9676307",
-          imo: "9676307"
+          imo: "9676307",
         },
         {
-          id: "2", 
+          id: "2",
           ship_email: "captain.anderson@oceanfreight.com",
           ship_password: "password123",
           app_password: "app123",
@@ -57,7 +57,7 @@ export default function VesselURLManager() {
           type: "Bulk Carrier",
           flag: "Liberia",
           mmsi: "123456789",
-          imo: "123456789"
+          imo: "123456789",
         },
         {
           id: "3",
@@ -71,8 +71,8 @@ export default function VesselURLManager() {
           type: "Cargo Ship",
           flag: "Marshall Islands",
           mmsi: "987654321",
-          imo: "987654321"
-        }
+          imo: "987654321",
+        },
       ]);
       setLoading(false);
     }, 1000);
@@ -90,22 +90,20 @@ export default function VesselURLManager() {
 
   const handleSave = async (shipId: string) => {
     setSaving(shipId);
-    
+
     try {
       // Here you would make an API call to update the ship
       // await updateShipVesselFinderUrl(shipId, editingUrl);
-      
+
       // For now, update local state
-      setShips(prev => prev.map(ship => 
-        ship.id === shipId 
-          ? { ...ship, vesselfinder_url: editingUrl || undefined }
-          : ship
-      ));
-      
+      setShips((prev) =>
+        prev.map((ship) => (ship.id === shipId ? { ...ship, vesselfinder_url: editingUrl || undefined } : ship)),
+      );
+
       setEditingId(null);
       setEditingUrl("");
     } catch (error) {
-      console.error('Failed to save URL:', error);
+      console.error("Failed to save URL:", error);
     } finally {
       setSaving(null);
     }
@@ -127,12 +125,10 @@ export default function VesselURLManager() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold">VesselFinder URL Manager</h1>
-        <p className="text-muted-foreground">
-          Manage VesselFinder URLs for ship tracking and data scraping
-        </p>
+        <p className="text-muted-foreground">Manage VesselFinder URLs for ship tracking and data scraping</p>
       </div>
 
       <Card>
@@ -141,19 +137,15 @@ export default function VesselURLManager() {
             <ShipIcon className="h-5 w-5" />
             <span>Ship VesselFinder URLs</span>
           </CardTitle>
-          <CardDescription>
-            Add or edit VesselFinder vessel detail page URLs for each ship
-          </CardDescription>
+          <CardDescription>Add or edit VesselFinder vessel detail page URLs for each ship</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {/* URL Format Example */}
-            <div className="bg-muted/50 p-4 rounded-lg">
-              <h4 className="font-medium mb-2">URL Format:</h4>
-              <code className="text-sm">
-                https://www.vesselfinder.com/vessels/details/[VESSEL_ID]
-              </code>
-              <p className="text-sm text-muted-foreground mt-2">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h4 className="mb-2 font-medium">URL Format:</h4>
+              <code className="text-sm">https://www.vesselfinder.com/vessels/details/[VESSEL_ID]</code>
+              <p className="text-muted-foreground mt-2 text-sm">
                 Example: https://www.vesselfinder.com/vessels/details/9676307
               </p>
             </div>
@@ -175,7 +167,7 @@ export default function VesselURLManager() {
                     <TableCell>
                       <div>
                         <div className="font-medium">{ship.name}</div>
-                        <div className="text-sm text-muted-foreground">{ship.flag}</div>
+                        <div className="text-muted-foreground text-sm">{ship.flag}</div>
                       </div>
                     </TableCell>
                     <TableCell>{ship.type}</TableCell>
@@ -194,25 +186,21 @@ export default function VesselURLManager() {
                             placeholder="https://www.vesselfinder.com/vessels/details/..."
                             className={!isUrlValid ? "border-red-500" : ""}
                           />
-                          {!isUrlValid && (
-                            <p className="text-sm text-red-500">
-                              Please enter a valid VesselFinder URL
-                            </p>
-                          )}
+                          {!isUrlValid && <p className="text-sm text-red-500">Please enter a valid VesselFinder URL</p>}
                         </div>
                       ) : (
                         <div>
                           {ship.vesselfinder_url ? (
                             <div className="flex items-center space-x-2">
                               <Badge variant="outline" className="text-xs">
-                                <ExternalLink className="h-3 w-3 mr-1" />
+                                <ExternalLink className="mr-1 h-3 w-3" />
                                 Configured
                               </Badge>
                               <a
                                 href={ship.vesselfinder_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline text-sm"
+                                className="text-sm text-blue-500 hover:underline"
                               >
                                 View
                               </a>
@@ -237,18 +225,13 @@ export default function VesselURLManager() {
                               <>Saving...</>
                             ) : (
                               <>
-                                <Check className="h-4 w-4 mr-1" />
+                                <Check className="mr-1 h-4 w-4" />
                                 Save
                               </>
                             )}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleEditCancel}
-                            disabled={saving === ship.id}
-                          >
-                            <X className="h-4 w-4 mr-1" />
+                          <Button size="sm" variant="outline" onClick={handleEditCancel} disabled={saving === ship.id}>
+                            <X className="mr-1 h-4 w-4" />
                             Cancel
                           </Button>
                         </div>
@@ -258,7 +241,7 @@ export default function VesselURLManager() {
                           variant="outline"
                           onClick={() => handleEditStart(ship.id, ship.vesselfinder_url)}
                         >
-                          <Edit className="h-4 w-4 mr-1" />
+                          <Edit className="mr-1 h-4 w-4" />
                           Edit
                         </Button>
                       )}
@@ -269,27 +252,27 @@ export default function VesselURLManager() {
             </Table>
 
             {/* Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold">{ships.length}</div>
-                  <div className="text-sm text-muted-foreground">Total Ships</div>
+                  <div className="text-muted-foreground text-sm">Total Ships</div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-green-600">
-                    {ships.filter(s => s.vesselfinder_url).length}
+                    {ships.filter((s) => s.vesselfinder_url).length}
                   </div>
-                  <div className="text-sm text-muted-foreground">With URLs</div>
+                  <div className="text-muted-foreground text-sm">With URLs</div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-orange-600">
-                    {ships.filter(s => !s.vesselfinder_url).length}
+                    {ships.filter((s) => !s.vesselfinder_url).length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Missing URLs</div>
+                  <div className="text-muted-foreground text-sm">Missing URLs</div>
                 </CardContent>
               </Card>
             </div>

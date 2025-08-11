@@ -2,21 +2,14 @@ import { useState, useEffect } from "react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger, 
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  MapPin, 
-  ExternalLink
-} from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Eye, MapPin, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { optimizedShipService } from "@/lib/optimized-ship-service";
@@ -41,13 +34,13 @@ interface ShipRowData {
 export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
   const [shipData, setShipData] = useState<ShipRowData>({
     loading: true,
-    shipName: ship.ship_email.split('@')[0].toUpperCase()
+    shipName: ship.ship_email.split("@")[0].toUpperCase(),
   });
 
   // Helper function to extract IMO from VesselFinder URL
   const extractImoFromUrl = (url: string): string | null => {
     if (!url) return null;
-    
+
     // Match patterns like:
     // https://www.vesselfinder.com/vessels/details/9112038
     // https://www.vesselfinder.com/?imo=9112038
@@ -61,7 +54,7 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
     if (shipData.location?.imo) {
       return `https://www.vesselfinder.com/?imo=${shipData.location.imo}`;
     }
-    
+
     // Second priority: Extract IMO from stored VesselFinder URL
     if (ship.vesselfinder_url) {
       const extractedImo = extractImoFromUrl(ship.vesselfinder_url);
@@ -71,7 +64,7 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
       // Fallback to original URL if IMO extraction fails
       return ship.vesselfinder_url;
     }
-    
+
     return null;
   };
 
@@ -81,7 +74,7 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
     const loadShipData = async () => {
       // Add a small delay for staggered loading to prevent overwhelming the server
       const delay = index * 100; // 100ms delay between each ship
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
 
       if (!isMounted) return;
 
@@ -92,32 +85,32 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
           setShipData({
             location: cached.location,
             imageUrl: cached.imageUrl,
-            shipName: cached.shipName || ship.ship_email.split('@')[0].toUpperCase(),
+            shipName: cached.shipName || ship.ship_email.split("@")[0].toUpperCase(),
             trackingDetails: cached.trackingDetails,
-            loading: false
+            loading: false,
           });
           return;
         }
 
         // Load fresh data using optimized service
         const trackingData = await optimizedShipService.getShipTrackingData(ship);
-        
+
         if (isMounted) {
           setShipData({
             location: trackingData.location,
             imageUrl: trackingData.imageUrl,
-            shipName: trackingData.shipName || ship.ship_email.split('@')[0].toUpperCase(),
+            shipName: trackingData.shipName || ship.ship_email.split("@")[0].toUpperCase(),
             trackingDetails: trackingData.trackingDetails,
-            loading: false
+            loading: false,
           });
         }
       } catch (error) {
         console.error(`Error loading data for ship ${ship.ship_email}:`, error);
         if (isMounted) {
           setShipData({
-            shipName: ship.ship_email.split('@')[0].toUpperCase(),
+            shipName: ship.ship_email.split("@")[0].toUpperCase(),
             loading: false,
-            error: 'Failed to load tracking data'
+            error: "Failed to load tracking data",
           });
         }
       }
@@ -134,10 +127,10 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
     return (
       <TableRow>
         <TableCell>
-          <div className="flex items-center space-x-3 min-w-0">
+          <div className="flex min-w-0 items-center space-x-3">
             <Skeleton className="h-10 w-16 rounded" />
             <div className="min-w-0 flex-1">
-              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="mb-2 h-4 w-32" />
               <Skeleton className="h-3 w-48" />
             </div>
           </div>
@@ -155,7 +148,7 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
           <Skeleton className="h-4 w-24" />
         </TableCell>
         <TableCell className="text-right">
-          <Skeleton className="h-8 w-8 rounded ml-auto" />
+          <Skeleton className="ml-auto h-8 w-8 rounded" />
         </TableCell>
       </TableRow>
     );
@@ -164,49 +157,32 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
   return (
     <TableRow>
       <TableCell>
-        <div className="flex items-center space-x-3 min-w-0">
+        <div className="flex min-w-0 items-center space-x-3">
           {shipData.imageUrl && (
-            <div className="h-10 w-16 relative rounded overflow-hidden flex-shrink-0">
-              <Image
-                src={shipData.imageUrl}
-                alt={shipData.shipName || "Ship"}
-                fill
-                className="object-cover"
-              />
+            <div className="relative h-10 w-16 flex-shrink-0 overflow-hidden rounded">
+              <Image src={shipData.imageUrl} alt={shipData.shipName || "Ship"} fill className="object-cover" />
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <div className="font-medium truncate">
-              {shipData.shipName}
-            </div>
-            <div className="text-sm text-muted-foreground truncate">
-              {ship.ship_email}
-            </div>
-            {shipData.error && (
-              <div className="text-xs text-red-500 truncate">
-                {shipData.error}
-              </div>
-            )}
+            <div className="truncate font-medium">{shipData.shipName}</div>
+            <div className="text-muted-foreground truncate text-sm">{ship.ship_email}</div>
+            {shipData.error && <div className="truncate text-xs text-red-500">{shipData.error}</div>}
           </div>
         </div>
       </TableCell>
       <TableCell>
         {shipData.location ? (
-          <div className="flex items-center space-x-1 min-w-0">
-            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-            <span className="text-sm truncate">
-              {shipData.location.port || `${shipData.location.latitude.toFixed(4)}°, ${shipData.location.longitude.toFixed(4)}°`}
+          <div className="flex min-w-0 items-center space-x-1">
+            <MapPin className="text-muted-foreground h-4 w-4 flex-shrink-0" />
+            <span className="truncate text-sm">
+              {shipData.location.port ||
+                `${shipData.location.latitude.toFixed(4)}°, ${shipData.location.longitude.toFixed(4)}°`}
             </span>
             {getTrackingUrl() && (
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="p-1 h-6 w-6 opacity-60 hover:opacity-100"
-              >
-                <a 
+              <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-1 opacity-60 hover:opacity-100">
+                <a
                   href={getTrackingUrl()!}
-                  target="_blank" 
+                  target="_blank"
                   rel="noopener noreferrer"
                   title="View live tracking on VesselFinder"
                 >
@@ -219,18 +195,8 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
           <div className="flex items-center space-x-1">
             <span className="text-muted-foreground">Unknown</span>
             {getTrackingUrl() && (
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="p-1 h-6 w-6 opacity-60 hover:opacity-100"
-              >
-                <a 
-                  href={getTrackingUrl()!}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  title="Search on VesselFinder"
-                >
+              <Button variant="ghost" size="sm" asChild className="h-6 w-6 p-1 opacity-60 hover:opacity-100">
+                <a href={getTrackingUrl()!} target="_blank" rel="noopener noreferrer" title="Search on VesselFinder">
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </Button>
@@ -245,12 +211,11 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
           <span className="text-muted-foreground">—</span>
         )}
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="text-muted-foreground text-sm">
         <span className="whitespace-nowrap">
-          {shipData.location?.lastUpdate 
+          {shipData.location?.lastUpdate
             ? new Date(shipData.location.lastUpdate).toLocaleString()
-            : new Date(ship.updated_at).toLocaleDateString()
-          }
+            : new Date(ship.updated_at).toLocaleDateString()}
         </span>
       </TableCell>
       <TableCell className="text-right">
@@ -271,10 +236,7 @@ export function ShipRow({ ship, onDelete, index }: ShipRowProps) {
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-600"
-              onClick={() => onDelete(ship.id)}
-            >
+            <DropdownMenuItem className="text-red-600" onClick={() => onDelete(ship.id)}>
               <Trash2 className="mr-2 h-4 w-4" />
               Delete
             </DropdownMenuItem>

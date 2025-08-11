@@ -41,14 +41,14 @@ export default function VesselURLTester() {
     setResult(null);
 
     try {
-      const response = await fetch('/api/scrape-vessel-detail', {
-        method: 'POST',
+      const response = await fetch("/api/scrape-vessel-detail", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ url: vesselUrl })
+        body: JSON.stringify({ url: vesselUrl }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -58,10 +58,10 @@ export default function VesselURLTester() {
       if (data.success) {
         setResult(data.data);
       } else {
-        setError(data.error || 'Failed to fetch vessel data');
+        setError(data.error || "Failed to fetch vessel data");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+      setError(err instanceof Error ? err.message : "Unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -71,22 +71,20 @@ export default function VesselURLTester() {
     {
       name: "HY EMERALD",
       url: "https://www.vesselfinder.com/vessels/details/9676307",
-      description: "Container ship example"
+      description: "Container ship example",
     },
     {
       name: "Sample Vessel",
       url: "https://www.vesselfinder.com/vessels/details/9234567",
-      description: "Another vessel example"
-    }
+      description: "Another vessel example",
+    },
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold">VesselFinder URL Tester</h1>
-        <p className="text-muted-foreground">
-          Test scraping specific VesselFinder vessel detail pages
-        </p>
+        <p className="text-muted-foreground">Test scraping specific VesselFinder vessel detail pages</p>
       </div>
 
       <Card>
@@ -95,9 +93,7 @@ export default function VesselURLTester() {
             <Globe className="h-5 w-5" />
             <span>Test VesselFinder URL</span>
           </CardTitle>
-          <CardDescription>
-            Enter a VesselFinder vessel detail URL to test the scraping functionality
-          </CardDescription>
+          <CardDescription>Enter a VesselFinder vessel detail URL to test the scraping functionality</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -108,24 +104,14 @@ export default function VesselURLTester() {
               value={vesselUrl}
               onChange={(e) => setVesselUrl(e.target.value)}
             />
-            <p className="text-sm text-muted-foreground">
-              Enter the full URL from a VesselFinder vessel detail page
-            </p>
+            <p className="text-muted-foreground text-sm">Enter the full URL from a VesselFinder vessel detail page</p>
           </div>
 
-          <Button 
-            onClick={handleTest} 
-            disabled={loading || !vesselUrl.trim()}
-            className="w-full"
-          >
+          <Button onClick={handleTest} disabled={loading || !vesselUrl.trim()} className="w-full">
             {loading ? "Testing..." : "Test Scraping"}
           </Button>
 
-          {error && (
-            <div className="text-red-600 text-sm p-3 bg-red-50 rounded-md">
-              Error: {error}
-            </div>
-          )}
+          {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">Error: {error}</div>}
         </CardContent>
       </Card>
 
@@ -133,24 +119,22 @@ export default function VesselURLTester() {
       <Card>
         <CardHeader>
           <CardTitle>Example URLs</CardTitle>
-          <CardDescription>
-            Click on these example URLs to test the scraping functionality
-          </CardDescription>
+          <CardDescription>Click on these example URLs to test the scraping functionality</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           {exampleUrls.map((example, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
+              className="hover:bg-muted/50 flex cursor-pointer items-center justify-between rounded-lg border p-3"
               onClick={() => setVesselUrl(example.url)}
             >
               <div>
                 <div className="font-medium">{example.name}</div>
-                <div className="text-sm text-muted-foreground">{example.description}</div>
+                <div className="text-muted-foreground text-sm">{example.description}</div>
               </div>
               <div className="flex items-center space-x-2">
                 <Badge variant="outline">
-                  <ExternalLink className="h-3 w-3 mr-1" />
+                  <ExternalLink className="mr-1 h-3 w-3" />
                   VesselFinder
                 </Badge>
               </div>
@@ -167,15 +151,13 @@ export default function VesselURLTester() {
               <ShipIcon className="h-5 w-5 text-blue-500" />
               <span>Scraped Vessel Data</span>
             </CardTitle>
-            <CardDescription>
-              Data extracted from VesselFinder
-            </CardDescription>
+            <CardDescription>Data extracted from VesselFinder</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               {/* Vessel Information */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Vessel Information</h3>
+                <h3 className="text-lg font-semibold">Vessel Information</h3>
                 <div className="space-y-2">
                   {result.name && (
                     <div>
@@ -208,14 +190,14 @@ export default function VesselURLTester() {
               {/* Location Information */}
               {result.location && (
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-lg flex items-center space-x-2">
+                  <h3 className="flex items-center space-x-2 text-lg font-semibold">
                     <MapPin className="h-5 w-5 text-green-500" />
                     <span>Location & Status</span>
                   </h3>
                   <div className="space-y-2">
                     <div>
-                      <span className="font-medium">Coordinates:</span>{" "}
-                      {result.location.latitude.toFixed(4)}°, {result.location.longitude.toFixed(4)}°
+                      <span className="font-medium">Coordinates:</span> {result.location.latitude.toFixed(4)}°,{" "}
+                      {result.location.longitude.toFixed(4)}°
                     </div>
                     {result.location.port && (
                       <div>
@@ -248,13 +230,9 @@ export default function VesselURLTester() {
             {/* Vessel Image */}
             {result.image && (
               <div className="mt-6">
-                <h3 className="font-semibold text-lg mb-3">Vessel Image</h3>
-                <div className="relative h-64 w-full rounded-lg overflow-hidden">
-                  <img
-                    src={result.image}
-                    alt={result.name || "Vessel"}
-                    className="w-full h-full object-cover"
-                  />
+                <h3 className="mb-3 text-lg font-semibold">Vessel Image</h3>
+                <div className="relative h-64 w-full overflow-hidden rounded-lg">
+                  <img src={result.image} alt={result.name || "Vessel"} className="h-full w-full object-cover" />
                 </div>
               </div>
             )}

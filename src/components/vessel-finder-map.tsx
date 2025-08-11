@@ -25,7 +25,7 @@ export function VesselFinderMap({ imo, mmsi, vesselName, vesselfinderUrl, classN
   const mapUrl = (() => {
     // First priority: Direct IMO parameter
     if (imo) return `https://www.vesselfinder.com/?imo=${imo}`;
-    
+
     // Second priority: Extract IMO from provided URL and convert to live tracking
     if (vesselfinderUrl) {
       const extractedImo = extractImoFromUrl(vesselfinderUrl);
@@ -33,21 +33,17 @@ export function VesselFinderMap({ imo, mmsi, vesselName, vesselfinderUrl, classN
       // Fallback to original URL
       return vesselfinderUrl;
     }
-    
+
     // Third priority: MMSI-based tracking
     if (mmsi) return `https://www.vesselfinder.com/?mmsi=${mmsi}`;
-    
+
     return null;
   })();
 
-  const detailUrl = imo 
-    ? `https://www.vesselfinder.com/vessels/details/${imo}`
-    : null;
+  const detailUrl = imo ? `https://www.vesselfinder.com/vessels/details/${imo}` : null;
 
   // Alternative mapping services
-  const marineTrafficUrl = mmsi 
-    ? `https://www.marinetraffic.com/en/ais/details/ships/mmsi:${mmsi}`
-    : null;
+  const marineTrafficUrl = mmsi ? `https://www.marinetraffic.com/en/ais/details/ships/mmsi:${mmsi}` : null;
 
   const vesselFinderSearchUrl = vesselName
     ? `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselName)}`
@@ -57,8 +53,8 @@ export function VesselFinderMap({ imo, mmsi, vesselName, vesselfinderUrl, classN
     return (
       <Card className={className}>
         <CardContent className="pt-6">
-          <div className="text-center py-8 text-muted-foreground">
-            <Map className="mx-auto h-12 w-12 mb-2 opacity-50" />
+          <div className="text-muted-foreground py-8 text-center">
+            <Map className="mx-auto mb-2 h-12 w-12 opacity-50" />
             <p>Map unavailable</p>
             <p className="text-sm">No tracking information available</p>
           </div>
@@ -70,8 +66,8 @@ export function VesselFinderMap({ imo, mmsi, vesselName, vesselfinderUrl, classN
   return (
     <Card className={className}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center">
-          <Map className="h-5 w-5 mr-2" />
+        <CardTitle className="flex items-center text-lg">
+          <Map className="mr-2 h-5 w-5" />
           Live Position Tracking
         </CardTitle>
       </CardHeader>
@@ -80,70 +76,53 @@ export function VesselFinderMap({ imo, mmsi, vesselName, vesselfinderUrl, classN
           {/* Main tracking options */}
           <div className="grid gap-3">
             {mapUrl && (
-              <Button
-                variant="default"
-                size="lg"
-                asChild
-                className="w-full justify-start h-auto py-4"
-              >
+              <Button variant="default" size="lg" asChild className="h-auto w-full justify-start py-4">
                 <a href={mapUrl} target="_blank" rel="noopener noreferrer">
-                  <div className="flex items-center w-full">
-                    <div className="p-2 bg-white/20 rounded-lg mr-3">
+                  <div className="flex w-full items-center">
+                    <div className="mr-3 rounded-lg bg-white/20 p-2">
                       <Navigation className="h-5 w-5" />
                     </div>
-                    <div className="text-left flex-1">
+                    <div className="flex-1 text-left">
                       <div className="font-semibold">View Live Position on VesselFinder</div>
                       <div className="text-sm opacity-90">Real-time tracking and vessel details</div>
                     </div>
-                    <ExternalLink className="h-4 w-4 ml-2" />
+                    <ExternalLink className="ml-2 h-4 w-4" />
                   </div>
                 </a>
               </Button>
             )}
 
             {marineTrafficUrl && (
-              <Button
-                variant="outline"
-                size="lg"
-                asChild
-                className="w-full justify-start h-auto py-4"
-              >
+              <Button variant="outline" size="lg" asChild className="h-auto w-full justify-start py-4">
                 <a href={marineTrafficUrl} target="_blank" rel="noopener noreferrer">
-                  <div className="flex items-center w-full">
-                    <div className="p-2 bg-muted rounded-lg mr-3">
+                  <div className="flex w-full items-center">
+                    <div className="bg-muted mr-3 rounded-lg p-2">
                       <Map className="h-5 w-5" />
                     </div>
-                    <div className="text-left flex-1">
+                    <div className="flex-1 text-left">
                       <div className="font-semibold">Alternative: MarineTraffic</div>
-                      <div className="text-sm text-muted-foreground">Cross-reference position data</div>
+                      <div className="text-muted-foreground text-sm">Cross-reference position data</div>
                     </div>
-                    <ExternalLink className="h-4 w-4 ml-2" />
+                    <ExternalLink className="ml-2 h-4 w-4" />
                   </div>
                 </a>
               </Button>
             )}
 
             {vesselFinderSearchUrl && (
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="w-full"
-              >
+              <Button variant="outline" size="sm" asChild className="w-full">
                 <a href={vesselFinderSearchUrl} target="_blank" rel="noopener noreferrer">
                   Search "{vesselName}" on VesselFinder
-                  <ExternalLink className="h-4 w-4 ml-1" />
+                  <ExternalLink className="ml-1 h-4 w-4" />
                 </a>
               </Button>
             )}
           </div>
 
           {/* Quick vessel info */}
-          <div className="border-t pt-4 space-y-2">
-            <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-              Vessel Identifiers
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="space-y-2 border-t pt-4">
+            <h4 className="text-muted-foreground text-sm font-medium tracking-wide uppercase">Vessel Identifiers</h4>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {imo && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">IMO:</span>
@@ -170,7 +149,7 @@ export function VesselFinderMap({ imo, mmsi, vesselName, vesselfinderUrl, classN
           </div>
 
           {/* Help text */}
-          <div className="text-xs text-muted-foreground text-center pt-2 border-t">
+          <div className="text-muted-foreground border-t pt-2 text-center text-xs">
             💡 Tip: Bookmark the VesselFinder link for quick access to real-time tracking
           </div>
         </div>

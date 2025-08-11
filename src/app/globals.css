@@ -170,22 +170,22 @@ These serve as the fallback; there is no separate default.css file. */
   .table-container {
     @apply overflow-x-auto;
   }
-  
+
   /* Responsive text handling */
   .truncate-responsive {
     @apply truncate;
   }
-  
+
   /* Better spacing for wide screens */
   .responsive-spacing {
     @apply space-y-4 lg:space-y-6 xl:space-y-8;
   }
-  
+
   /* Adaptive containers */
   .container-adaptive {
-    @apply w-full max-w-screen-2xl mx-auto;
+    @apply mx-auto w-full max-w-screen-2xl;
   }
-  
+
   /* Better button spacing on wide screens */
   .button-group-responsive {
     @apply flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2;
@@ -198,7 +198,7 @@ These serve as the fallback; there is no separate default.css file. */
       position: relative !important;
       transform: translateX(0) !important;
     }
-    
+
     /* Hide sidebar overlay on wide screens since sidebar is always open */
     [data-sidebar="sidebar"] + [data-sidebar="overlay"] {
       display: none !important;

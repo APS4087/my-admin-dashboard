@@ -6,18 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { 
-  Edit, 
-  Trash2, 
-  Mail, 
-  Phone, 
-  Briefcase, 
-  Building, 
-  Calendar,
-  User,
-  Key,
-  MapPin
-} from "lucide-react";
+import { Edit, Trash2, Mail, Phone, Briefcase, Building, Calendar, User, Key, MapPin } from "lucide-react";
 import { employeeService } from "@/lib/employee-service";
 import type { Employee } from "@/types/employee";
 import Link from "next/link";
@@ -31,8 +20,8 @@ export default function EmployeeDetailPage() {
 
   useEffect(() => {
     const fetchEmployee = async () => {
-      if (!params.id || typeof params.id !== 'string') return;
-      
+      if (!params.id || typeof params.id !== "string") return;
+
       try {
         const data = await employeeService.getEmployeeById(params.id);
         setEmployee(data);
@@ -48,17 +37,17 @@ export default function EmployeeDetailPage() {
 
   const handleDelete = async () => {
     if (!employee) return;
-    
+
     const confirmed = confirm(
-      `Are you sure you want to delete ${employee.first_name} ${employee.last_name}? This action cannot be undone.`
+      `Are you sure you want to delete ${employee.first_name} ${employee.last_name}? This action cannot be undone.`,
     );
-    
+
     if (!confirmed) return;
 
     setDeleting(true);
     try {
       await employeeService.deleteEmployee(employee.id);
-      router.push('/dashboard/employees');
+      router.push("/dashboard/employees");
     } catch (error) {
       console.error("Failed to delete employee:", error);
       alert("Failed to delete employee. Please try again.");
@@ -72,15 +61,15 @@ export default function EmployeeDetailPage() {
       <div className="p-6">
         <div className="animate-pulse space-y-6">
           <div className="flex items-center space-x-4">
-            <div className="h-10 w-20 bg-gray-200 rounded"></div>
-            <div className="h-8 w-64 bg-gray-200 rounded"></div>
+            <div className="h-10 w-20 rounded bg-gray-200"></div>
+            <div className="h-8 w-64 rounded bg-gray-200"></div>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <div className="h-64 bg-gray-200 rounded-lg"></div>
-              <div className="h-32 bg-gray-200 rounded-lg"></div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <div className="h-64 rounded-lg bg-gray-200"></div>
+              <div className="h-32 rounded-lg bg-gray-200"></div>
             </div>
-            <div className="h-64 bg-gray-200 rounded-lg"></div>
+            <div className="h-64 rounded-lg bg-gray-200"></div>
           </div>
         </div>
       </div>
@@ -93,7 +82,7 @@ export default function EmployeeDetailPage() {
         <Card>
           <CardContent className="flex items-center justify-center py-16">
             <div className="text-center">
-              <h2 className="text-2xl font-semibold mb-2">Employee Not Found</h2>
+              <h2 className="mb-2 text-2xl font-semibold">Employee Not Found</h2>
               <p className="text-muted-foreground mb-4">
                 The employee you're looking for doesn't exist or has been removed.
               </p>
@@ -108,27 +97,21 @@ export default function EmployeeDetailPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">
             {employee.first_name} {employee.last_name}
           </h1>
-          <p className="text-muted-foreground">
-            Employee #{employee.employee_number}
-          </p>
+          <p className="text-muted-foreground">Employee #{employee.employee_number}</p>
         </div>
         <div className="flex space-x-2">
           <Button variant="outline">
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
-          <Button 
-            variant="destructive" 
-            onClick={handleDelete}
-            disabled={deleting}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
             <Trash2 className="mr-2 h-4 w-4" />
             {deleting ? "Deleting..." : "Delete"}
           </Button>
@@ -136,9 +119,9 @@ export default function EmployeeDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Left Column - Main Info */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           {/* Basic Information */}
           <Card>
             <CardHeader>
@@ -148,17 +131,17 @@ export default function EmployeeDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">First Name</label>
+                  <label className="text-muted-foreground text-sm font-medium">First Name</label>
                   <p className="text-base">{employee.first_name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Last Name</label>
+                  <label className="text-muted-foreground text-sm font-medium">Last Name</label>
                   <p className="text-base">{employee.last_name || "—"}</p>
                 </div>
                 <div className="md:col-span-2">
-                  <label className="text-sm font-medium text-muted-foreground">Display Name</label>
+                  <label className="text-muted-foreground text-sm font-medium">Display Name</label>
                   <p className="text-base">{employee.display_name || "—"}</p>
                 </div>
               </div>
@@ -174,9 +157,9 @@ export default function EmployeeDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Email Address</label>
+                  <label className="text-muted-foreground text-sm font-medium">Email Address</label>
                   <div className="flex items-center space-x-2">
                     <p className="text-base">{employee.email_address}</p>
                     <a href={`mailto:${employee.email_address}`}>
@@ -187,7 +170,7 @@ export default function EmployeeDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Office Phone</label>
+                  <label className="text-muted-foreground text-sm font-medium">Office Phone</label>
                   <div className="flex items-center space-x-2">
                     <p className="text-base">{employee.office_phone || "—"}</p>
                     {employee.office_phone && (
@@ -200,7 +183,7 @@ export default function EmployeeDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Mobile Phone</label>
+                  <label className="text-muted-foreground text-sm font-medium">Mobile Phone</label>
                   <div className="flex items-center space-x-2">
                     <p className="text-base">{employee.mobile_phone || "—"}</p>
                     {employee.mobile_phone && (
@@ -225,16 +208,16 @@ export default function EmployeeDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Department</label>
+                  <label className="text-muted-foreground text-sm font-medium">Department</label>
                   <div className="flex items-center space-x-2">
-                    <Building className="h-4 w-4 text-muted-foreground" />
+                    <Building className="text-muted-foreground h-4 w-4" />
                     <p className="text-base">{employee.department || "—"}</p>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Job Title</label>
+                  <label className="text-muted-foreground text-sm font-medium">Job Title</label>
                   <p className="text-base">{employee.job_title || "—"}</p>
                 </div>
               </div>

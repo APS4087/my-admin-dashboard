@@ -20,7 +20,7 @@ export class ShipCacheService {
   private static instance: ShipCacheService;
   private memoryCache = new Map<string, CacheEntry<ShipCacheData>>();
   private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
-  private readonly STORAGE_KEY = 'ship_tracking_cache';
+  private readonly STORAGE_KEY = "ship_tracking_cache";
 
   static getInstance(): ShipCacheService {
     if (!ShipCacheService.instance) {
@@ -52,7 +52,7 @@ export class ShipCacheService {
         }
       }
     } catch (error) {
-      console.error('Error reading from localStorage cache:', error);
+      console.error("Error reading from localStorage cache:", error);
     }
 
     return null;
@@ -66,7 +66,7 @@ export class ShipCacheService {
     const entry: CacheEntry<ShipCacheData> = {
       data,
       timestamp: Date.now(),
-      expiresAt
+      expiresAt,
     };
 
     // Set in memory cache
@@ -79,7 +79,7 @@ export class ShipCacheService {
       cache[shipId] = entry;
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cache));
     } catch (error) {
-      console.error('Error writing to localStorage cache:', error);
+      console.error("Error writing to localStorage cache:", error);
     }
   }
 
@@ -104,7 +104,7 @@ export class ShipCacheService {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cache));
       }
     } catch (error) {
-      console.error('Error deleting from localStorage cache:', error);
+      console.error("Error deleting from localStorage cache:", error);
     }
   }
 
@@ -116,7 +116,7 @@ export class ShipCacheService {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
     } catch (error) {
-      console.error('Error clearing localStorage cache:', error);
+      console.error("Error clearing localStorage cache:", error);
     }
   }
 
@@ -139,18 +139,18 @@ export class ShipCacheService {
       if (storageData) {
         const cache = JSON.parse(storageData);
         const cleaned: any = {};
-        
+
         for (const [key, entry] of Object.entries(cache)) {
           const typedEntry = entry as CacheEntry<ShipCacheData>;
           if (now < typedEntry.expiresAt) {
             cleaned[key] = entry;
           }
         }
-        
+
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cleaned));
       }
     } catch (error) {
-      console.error('Error cleaning localStorage cache:', error);
+      console.error("Error cleaning localStorage cache:", error);
     }
   }
 
@@ -163,20 +163,20 @@ export class ShipCacheService {
     memorySize: number;
   } {
     let storageEntries = 0;
-    
+
     try {
       const storageData = localStorage.getItem(this.STORAGE_KEY);
       if (storageData) {
         storageEntries = Object.keys(JSON.parse(storageData)).length;
       }
     } catch (error) {
-      console.error('Error reading cache stats:', error);
+      console.error("Error reading cache stats:", error);
     }
 
     return {
       memoryEntries: this.memoryCache.size,
       storageEntries,
-      memorySize: JSON.stringify([...this.memoryCache.entries()]).length
+      memorySize: JSON.stringify([...this.memoryCache.entries()]).length,
     };
   }
 }

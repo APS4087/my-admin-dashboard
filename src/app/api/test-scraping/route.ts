@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * Test API endpoint for VesselFinder scraping
@@ -7,14 +7,14 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const testUrl = searchParams.get('url') || 'https://www.vesselfinder.com/vessels/details/9676307';
+  const testUrl = searchParams.get("url") || "https://www.vesselfinder.com/vessels/details/9676307";
 
   try {
     // Call our scrape-vessel-detail API
     const response = await fetch(`${request.nextUrl.origin}/api/scrape-vessel-detail`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ url: testUrl }),
     });
@@ -27,22 +27,21 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Scraping test completed',
+      message: "Scraping test completed",
       testUrl,
       result,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Scraping test error:', error);
+    console.error("Scraping test error:", error);
     return NextResponse.json(
       {
-        error: 'Scraping test failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Scraping test failed",
+        message: error instanceof Error ? error.message : "Unknown error",
         testUrl,
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -52,17 +51,14 @@ export async function POST(request: NextRequest) {
     const { url } = await request.json();
 
     if (!url) {
-      return NextResponse.json(
-        { error: 'URL is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
     // Call our scrape-vessel-detail API
     const response = await fetch(`${request.nextUrl.origin}/api/scrape-vessel-detail`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ url }),
     });
@@ -75,21 +71,20 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Scraping test completed',
+      message: "Scraping test completed",
       testUrl: url,
       result,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
-    console.error('Scraping test error:', error);
+    console.error("Scraping test error:", error);
     return NextResponse.json(
       {
-        error: 'Scraping test failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Scraping test failed",
+        message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

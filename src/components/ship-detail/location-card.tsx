@@ -2,14 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  MapPin, 
-  Navigation, 
-  Anchor, 
-  Ship as ShipIcon,
-  Signal,
-  Clock
-} from "lucide-react";
+import { MapPin, Navigation, Anchor, Ship as ShipIcon, Signal, Clock } from "lucide-react";
 import { optimizedShipDetailService } from "@/lib/optimized-ship-detail-service";
 import type { Ship } from "@/types/ship";
 import type { ShipLocation } from "@/lib/ship-tracking-service";
@@ -38,15 +31,15 @@ export function LocationCard({ ship }: LocationCardProps) {
 
         // Load fresh data
         const trackingData = await optimizedShipDetailService.loadTrackingData(ship);
-        
+
         if (isMounted) {
           setLocation(trackingData.location || null);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Error loading location data:', error);
+        console.error("Error loading location data:", error);
         if (isMounted) {
-          setError('Failed to load location data');
+          setError("Failed to load location data");
           setLoading(false);
         }
       }
@@ -98,9 +91,7 @@ export function LocationCard({ ship }: LocationCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            {error || "Location data not available"}
-          </div>
+          <div className="text-muted-foreground py-8 text-center">{error || "Location data not available"}</div>
         </CardContent>
       </Card>
     );
@@ -118,46 +109,30 @@ export function LocationCard({ ship }: LocationCardProps) {
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
-            {location.status === "Underway" && (
-              <Navigation className="h-4 w-4 text-blue-500" />
-            )}
-            {location.status === "At anchor" && (
-              <Anchor className="h-4 w-4 text-yellow-500" />
-            )}
-            {location.status === "Moored" && (
-              <ShipIcon className="h-4 w-4 text-green-500" />
-            )}
-            <Badge variant={location.status === "Underway" ? "default" : "secondary"}>
-              {location.status}
-            </Badge>
+            {location.status === "Underway" && <Navigation className="h-4 w-4 text-blue-500" />}
+            {location.status === "At anchor" && <Anchor className="h-4 w-4 text-yellow-500" />}
+            {location.status === "Moored" && <ShipIcon className="h-4 w-4 text-green-500" />}
+            <Badge variant={location.status === "Underway" ? "default" : "secondary"}>{location.status}</Badge>
           </div>
-          {location.port && (
-            <p className="text-sm text-muted-foreground">
-              Port: {location.port}
-            </p>
-          )}
-          {location.destination && (
-            <p className="text-sm text-muted-foreground">
-              Destination: {location.destination}
-            </p>
-          )}
+          {location.port && <p className="text-muted-foreground text-sm">Port: {location.port}</p>}
+          {location.destination && <p className="text-muted-foreground text-sm">Destination: {location.destination}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
             <p className="text-sm font-medium">Speed</p>
             <p className="text-2xl font-bold">{location.speed.toFixed(1)}</p>
-            <p className="text-xs text-muted-foreground">knots</p>
+            <p className="text-muted-foreground text-xs">knots</p>
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium">Course</p>
             <p className="text-2xl font-bold">{location.course}°</p>
-            <p className="text-xs text-muted-foreground">heading</p>
+            <p className="text-muted-foreground text-xs">heading</p>
           </div>
         </div>
 
         {location.lastUpdate && (
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground pt-2 border-t">
+          <div className="text-muted-foreground flex items-center space-x-2 border-t pt-2 text-sm">
             <Clock className="h-4 w-4" />
             <span>Updated: {new Date(location.lastUpdate).toLocaleString()}</span>
           </div>

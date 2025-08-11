@@ -3,7 +3,7 @@
  * Integrates with VesselFinder scraping service for ship location and image data
  */
 
-import { vesselScraperService, type ScrapedShipData } from './vessel-scraper-service';
+import { vesselScraperService, type ScrapedShipData } from "./vessel-scraper-service";
 
 export interface ShipLocation {
   latitude: number;
@@ -60,13 +60,13 @@ export class ShipTrackingService {
           port: vesselData.location.port,
           destination: vesselData.location.destination,
           mmsi: vesselData.mmsi,
-          imo: vesselData.imo
+          imo: vesselData.imo,
         };
       }
 
       return null;
     } catch (error) {
-      console.error('Error fetching ship location:', error);
+      console.error("Error fetching ship location:", error);
       return null;
     }
   }
@@ -82,13 +82,13 @@ export class ShipTrackingService {
           url: vesselData.image.url,
           source: vesselData.image.source,
           caption: vesselData.image.caption,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         };
       }
 
       return null;
     } catch (error) {
-      console.error('Error fetching ship image:', error);
+      console.error("Error fetching ship image:", error);
       return null;
     }
   }
@@ -107,13 +107,13 @@ export class ShipTrackingService {
           length: vesselData.length,
           width: vesselData.width,
           deadweight: vesselData.deadweight,
-          yearBuilt: vesselData.yearBuilt
+          yearBuilt: vesselData.yearBuilt,
         };
       }
 
       return null;
     } catch (error) {
-      console.error('Error fetching ship details:', error);
+      console.error("Error fetching ship details:", error);
       return null;
     }
   }
@@ -124,23 +124,23 @@ export class ShipTrackingService {
   private async fetchFromScrapingAPI(shipEmail: string): Promise<any | null> {
     try {
       // Extract ship name from email for search
-      const shipName = shipEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ');
-      
+      const shipName = shipEmail.split("@")[0].replace(/[^a-zA-Z0-9]/g, " ");
+
       const response = await fetch(`/api/scrape-vessel?query=${encodeURIComponent(shipName)}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.data && result.data.length > 0) {
         return result.data[0];
       }
-      
+
       return null;
     } catch (error) {
-      console.error('Error fetching from scraping API:', error);
+      console.error("Error fetching from scraping API:", error);
       return null;
     }
   }
@@ -156,12 +156,12 @@ export class ShipTrackingService {
       longitude: data.location.longitude,
       speed: data.location.speed || 0,
       course: data.location.course || 0,
-      status: data.location.status || 'Unknown',
+      status: data.location.status || "Unknown",
       lastUpdate: data.lastUpdate || new Date().toISOString(),
       port: data.location.port,
       destination: data.location.destination,
       mmsi: data.mmsi,
-      imo: data.imo
+      imo: data.imo,
     };
   }
 
@@ -171,20 +171,20 @@ export class ShipTrackingService {
   async searchShipsByName(name: string): Promise<ShipLocation[]> {
     try {
       const response = await fetch(`/api/scrape-vessel?query=${encodeURIComponent(name)}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.data) {
         return result.data.map((data: any) => this.convertToShipLocation(data)).filter(Boolean);
       }
-      
+
       return [];
     } catch (error) {
-      console.error('Error searching ships by name:', error);
+      console.error("Error searching ships by name:", error);
       return [];
     }
   }
@@ -195,20 +195,20 @@ export class ShipTrackingService {
   async getShipByMMSI(mmsi: string): Promise<ShipLocation | null> {
     try {
       const response = await fetch(`/api/scrape-vessel?mmsi=${mmsi}`);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const result = await response.json();
-      
+
       if (result.success && result.data && result.data.length > 0) {
         return this.convertToShipLocation(result.data[0]);
       }
-      
+
       return null;
     } catch (error) {
-      console.error('Error fetching ship by MMSI:', error);
+      console.error("Error fetching ship by MMSI:", error);
       return null;
     }
   }
@@ -217,8 +217,8 @@ export class ShipTrackingService {
    * Convert coordinates to human-readable format
    */
   static formatCoordinates(lat: number, lng: number): string {
-    const latDir = lat >= 0 ? 'N' : 'S';
-    const lngDir = lng >= 0 ? 'E' : 'W';
+    const latDir = lat >= 0 ? "N" : "S";
+    const lngDir = lng >= 0 ? "E" : "W";
     return `${Math.abs(lat).toFixed(6)}°${latDir}, ${Math.abs(lng).toFixed(6)}°${lngDir}`;
   }
 
@@ -229,9 +229,9 @@ export class ShipTrackingService {
     const R = 3440.065; // Earth's radius in nautical miles
     const dLat = this.toRadians(lat2 - lat1);
     const dLng = this.toRadians(lng2 - lng1);
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-              Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }

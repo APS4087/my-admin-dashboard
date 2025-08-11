@@ -16,12 +16,12 @@ function useResponsiveSidebar(defaultOpen: boolean) {
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Function to check screen size and update sidebar state
     const updateSidebarState = () => {
       const wideScreen = window.innerWidth >= 1024; // lg breakpoint
       setIsWideScreen(wideScreen);
-      
+
       if (wideScreen) {
         // On wide screens, always keep sidebar open
         setIsOpen(true);
@@ -41,10 +41,10 @@ function useResponsiveSidebar(defaultOpen: boolean) {
       timeoutId = setTimeout(updateSidebarState, 100);
     };
 
-    window.addEventListener('resize', debouncedUpdate);
-    
+    window.addEventListener("resize", debouncedUpdate);
+
     return () => {
-      window.removeEventListener('resize', debouncedUpdate);
+      window.removeEventListener("resize", debouncedUpdate);
       clearTimeout(timeoutId);
     };
   }, [defaultOpen]);
@@ -57,20 +57,16 @@ export function ResponsiveSidebarProvider({ children, defaultOpen }: ResponsiveS
 
   // Prevent hydration mismatch by rendering with default state until mounted
   if (!mounted) {
-    return (
-      <SidebarProvider defaultOpen={defaultOpen}>
-        {children}
-      </SidebarProvider>
-    );
+    return <SidebarProvider defaultOpen={defaultOpen}>{children}</SidebarProvider>;
   }
 
   return (
-    <SidebarProvider 
+    <SidebarProvider
       defaultOpen={isOpen}
       // Disable manual toggle on wide screens by overriding the internal state
-      {...(isWideScreen && { 
+      {...(isWideScreen && {
         open: true,
-        onOpenChange: () => {} // Prevent closing on wide screens
+        onOpenChange: () => {}, // Prevent closing on wide screens
       })}
     >
       {children}

@@ -31,7 +31,7 @@ export interface ScrapedShipData {
 }
 
 export class VesselScraperService {
-  private readonly BASE_URL = 'https://www.vesselfinder.com';
+  private readonly BASE_URL = "https://www.vesselfinder.com";
 
   /**
    * Search for ships by name or identifier
@@ -40,12 +40,12 @@ export class VesselScraperService {
     try {
       // Use a CORS proxy or server-side scraping
       const searchUrl = `${this.BASE_URL}/vessels?name=${encodeURIComponent(query)}`;
-      
+
       // For client-side, we'll simulate the search with mock data
       // In production, this should be done server-side
       return this.mockSearchResults(query);
     } catch (error) {
-      console.error('Error searching ships:', error);
+      console.error("Error searching ships:", error);
       return [];
     }
   }
@@ -56,12 +56,12 @@ export class VesselScraperService {
   async getShipByMMSI(mmsi: string): Promise<ScrapedShipData | null> {
     try {
       const shipUrl = `${this.BASE_URL}/vessels/${mmsi}`;
-      
+
       // For client-side, we'll use mock data
       // In production, implement server-side scraping
       return this.mockShipDetails(mmsi);
     } catch (error) {
-      console.error('Error fetching ship by MMSI:', error);
+      console.error("Error fetching ship by MMSI:", error);
       return null;
     }
   }
@@ -72,12 +72,12 @@ export class VesselScraperService {
   async getShipByEmail(shipEmail: string): Promise<ScrapedShipData | null> {
     try {
       // Extract ship name from email
-      const shipName = shipEmail.split('@')[0].replace(/[^a-zA-Z0-9]/g, ' ');
+      const shipName = shipEmail.split("@")[0].replace(/[^a-zA-Z0-9]/g, " ");
       const searchResults = await this.searchShips(shipName);
-      
+
       return searchResults.length > 0 ? searchResults[0] : null;
     } catch (error) {
-      console.error('Error fetching ship by email:', error);
+      console.error("Error fetching ship by email:", error);
       return null;
     }
   }
@@ -88,10 +88,10 @@ export class VesselScraperService {
    */
   private mockSearchResults(query: string): ScrapedShipData[] {
     const hash = this.simpleHash(query);
-    
+
     // Generate a more realistic ship name
     const shipName = this.generateRealisticShipName(query);
-    
+
     const mockShips = [
       {
         mmsi: (200000000 + (hash % 100000000)).toString(),
@@ -104,8 +104,8 @@ export class VesselScraperService {
         deadweight: 10000 + (hash % 50000),
         yearBuilt: 1990 + (hash % 34),
         location: this.generateLocation(hash),
-        image: this.generateImage(hash)
-      }
+        image: this.generateImage(hash),
+      },
     ];
 
     return mockShips;
@@ -116,10 +116,10 @@ export class VesselScraperService {
    */
   private mockShipDetails(mmsi: string): ScrapedShipData {
     const hash = this.simpleHash(mmsi);
-    
+
     // Generate a realistic ship name from MMSI
     const shipName = this.generateRealisticShipName(`VESSEL-${mmsi.slice(-4)}`);
-    
+
     return {
       mmsi,
       imo: (1000000 + (hash % 9000000)).toString(),
@@ -131,7 +131,7 @@ export class VesselScraperService {
       deadweight: 10000 + (hash % 50000),
       yearBuilt: 1990 + (hash % 34),
       location: this.generateLocation(hash),
-      image: this.generateImage(hash)
+      image: this.generateImage(hash),
     };
   }
 
@@ -140,57 +140,88 @@ export class VesselScraperService {
    */
   private generateRealisticShipName(input: string): string {
     // Extract base name from input (email, query, etc.)
-    let baseName = input.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-    
+    let baseName = input
+      .split("@")[0]
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase();
+
     // If input looks like captain.anderson, extract just "anderson"
-    if (baseName.includes('CAPTAIN')) {
-      const parts = input.split('.');
+    if (baseName.includes("CAPTAIN")) {
+      const parts = input.split(".");
       if (parts.length > 1) {
-        baseName = parts[1].split('@')[0].toUpperCase();
+        baseName = parts[1].split("@")[0].toUpperCase();
       }
     }
-    
+
     // Common ship name patterns
-    const shipPrefixes = ['MV', 'MS', 'MSC', 'MAERSK', 'COSCO', 'EVERGREEN', 'CMA CGM', 'HAPAG'];
+    const shipPrefixes = ["MV", "MS", "MSC", "MAERSK", "COSCO", "EVERGREEN", "CMA CGM", "HAPAG"];
     const shipNames = [
-      'EMERALD', 'SAPPHIRE', 'DIAMOND', 'PEARL', 'CRYSTAL', 'GOLDEN', 'SILVER', 'ROYAL',
-      'ATLANTIC', 'PACIFIC', 'MEDITERRANEAN', 'CARIBBEAN', 'ARCTIC', 'NORDIC',
-      'VICTORY', 'HARMONY', 'FREEDOM', 'LIBERTY', 'ENTERPRISE', 'PIONEER',
-      'STAR', 'SUN', 'MOON', 'OCEAN', 'WAVE', 'WIND', 'STORM', 'CALM'
+      "EMERALD",
+      "SAPPHIRE",
+      "DIAMOND",
+      "PEARL",
+      "CRYSTAL",
+      "GOLDEN",
+      "SILVER",
+      "ROYAL",
+      "ATLANTIC",
+      "PACIFIC",
+      "MEDITERRANEAN",
+      "CARIBBEAN",
+      "ARCTIC",
+      "NORDIC",
+      "VICTORY",
+      "HARMONY",
+      "FREEDOM",
+      "LIBERTY",
+      "ENTERPRISE",
+      "PIONEER",
+      "STAR",
+      "SUN",
+      "MOON",
+      "OCEAN",
+      "WAVE",
+      "WIND",
+      "STORM",
+      "CALM",
     ];
-    
+
     const hash = this.simpleHash(input);
-    
+
     // Special cases for specific inputs
     // Check for "hyemerald" or "emerald" in the search query
-    if (input.toLowerCase().includes('hyemerald') || input.toLowerCase().includes('emerald') || baseName.includes('EMERALD')) {
-      return 'HY EMERALD';
+    if (
+      input.toLowerCase().includes("hyemerald") ||
+      input.toLowerCase().includes("emerald") ||
+      baseName.includes("EMERALD")
+    ) {
+      return "HY EMERALD";
     }
-    
-    if (input.toLowerCase().includes('anderson')) {
-      return 'MV ANDERSON STAR';
+
+    if (input.toLowerCase().includes("anderson")) {
+      return "MV ANDERSON STAR";
     }
-    
-    if (input.toLowerCase().includes('martinez')) {
-      return 'COSCO MARTINEZ';
+
+    if (input.toLowerCase().includes("martinez")) {
+      return "COSCO MARTINEZ";
     }
-    
-    if (input.toLowerCase().includes('chen')) {
-      return 'EVERGREEN CHEN';
+
+    if (input.toLowerCase().includes("chen")) {
+      return "EVERGREEN CHEN";
     }
-    
-    if (input.toLowerCase().includes('johnson')) {
-      return 'MAERSK JOHNSON';
+
+    if (input.toLowerCase().includes("johnson")) {
+      return "MAERSK JOHNSON";
     }
-    
-    if (input.toLowerCase().includes('patel')) {
-      return 'MSC PATEL';
+
+    if (input.toLowerCase().includes("patel")) {
+      return "MSC PATEL";
     }
-    
+
     // Generate name based on hash for consistency
     const prefix = shipPrefixes[hash % shipPrefixes.length];
     const name = shipNames[hash % shipNames.length];
-    
+
     // Sometimes use base name, sometimes generated name
     if (hash % 3 === 0 && baseName.length > 3) {
       return `${prefix} ${baseName}`;
@@ -216,13 +247,13 @@ export class VesselScraperService {
       { lat: 22.2908, lng: 114.1501, name: "Port of Hong Kong", destination: "Port of Shanghai" },
       { lat: 31.2304, lng: 121.4737, name: "Port of Shanghai", destination: "Port of Singapore" },
       { lat: 35.6762, lng: 139.6503, name: "Port of Tokyo", destination: "Port of Yokohama" },
-      { lat: 55.7558, lng: 37.6176, name: "Port of St. Petersburg", destination: "Port of Helsinki" }
+      { lat: 55.7558, lng: 37.6176, name: "Port of St. Petersburg", destination: "Port of Helsinki" },
     ];
-    
+
     const route = shippingRoutes[hash % shippingRoutes.length];
     const latVariation = ((hash % 1000) - 500) * 0.001;
     const lngVariation = ((hash % 2000) - 1000) * 0.001;
-    
+
     return {
       latitude: route.lat + latVariation,
       longitude: route.lng + lngVariation,
@@ -231,7 +262,7 @@ export class VesselScraperService {
       status: this.getShipStatus(hash),
       lastUpdate: new Date(Date.now() - (hash % 3600000)).toISOString(),
       port: hash % 4 === 0 ? route.name : undefined,
-      destination: hash % 3 === 0 ? route.destination : undefined
+      destination: hash % 3 === 0 ? route.destination : undefined,
     };
   }
 
@@ -247,13 +278,13 @@ export class VesselScraperService {
       "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=400&fit=crop&crop=center&auto=format&q=80",
       "https://images.unsplash.com/photo-1578575436955-ef29c2526107?w=800&h=400&fit=crop&crop=center&auto=format&q=80",
       "https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&h=400&fit=crop&crop=center&auto=format&q=80",
-      "https://images.unsplash.com/photo-1613124945303-a85b7e03e3b6?w=800&h=400&fit=crop&crop=center&auto=format&q=80"
+      "https://images.unsplash.com/photo-1613124945303-a85b7e03e3b6?w=800&h=400&fit=crop&crop=center&auto=format&q=80",
     ];
-    
+
     return {
       url: shipImages[hash % shipImages.length],
       source: "VesselFinder Community",
-      caption: "Ship image from VesselFinder database"
+      caption: "Ship image from VesselFinder database",
     };
   }
 
@@ -279,7 +310,7 @@ export class VesselScraperService {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash);
@@ -292,7 +323,7 @@ export class VesselScraperService {
   static async scrapeVesselFinderServer(url: string): Promise<any> {
     // This should be implemented in a Next.js API route
     // using libraries like Puppeteer, Playwright, or Cheerio
-    
+
     const serverScrapeExample = `
     // Example implementation for /api/scrape-vessel route:
     
@@ -328,8 +359,8 @@ export class VesselScraperService {
       }
     }
     `;
-    
-    console.log('Server-side scraping implementation needed:', serverScrapeExample);
+
+    console.log("Server-side scraping implementation needed:", serverScrapeExample);
     return null;
   }
 }

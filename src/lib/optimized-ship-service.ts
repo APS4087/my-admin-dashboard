@@ -1,7 +1,7 @@
-import { createClient } from '@/lib/supabase/client'
-import type { Ship, ShipFilters } from '@/types/ship'
-import { shipTrackingService, type ShipLocation, type ShipDetails } from './ship-tracking-service'
-import { shipCache } from './ship-cache-service'
+import { createClient } from "@/lib/supabase/client";
+import type { Ship, ShipFilters } from "@/types/ship";
+import { shipTrackingService, type ShipLocation, type ShipDetails } from "./ship-tracking-service";
+import { shipCache } from "./ship-cache-service";
 
 export interface ShipWithTracking extends Ship {
   location?: ShipLocation;
@@ -11,33 +11,35 @@ export interface ShipWithTracking extends Ship {
 }
 
 export class OptimizedShipService {
-  private supabase = createClient()
+  private supabase = createClient();
 
   /**
    * Get basic ship data quickly without tracking information
    */
   async getShipsBasic(filters?: ShipFilters): Promise<Ship[]> {
     let query = this.supabase
-      .from('ships')
-      .select('id, ship_email, ship_password, app_password, is_active, vesselfinder_url, created_at, updated_at, created_by, updated_by')
-      .order('created_at', { ascending: false })
-      .limit(50) // Limit for faster initial load
+      .from("ships")
+      .select(
+        "id, ship_email, ship_password, app_password, is_active, vesselfinder_url, created_at, updated_at, created_by, updated_by",
+      )
+      .order("created_at", { ascending: false })
+      .limit(50); // Limit for faster initial load
 
     if (filters?.is_active !== undefined) {
-      query = query.eq('is_active', filters.is_active)
+      query = query.eq("is_active", filters.is_active);
     }
 
     if (filters?.search) {
-      query = query.ilike('ship_email', `%${filters.search}%`)
+      query = query.ilike("ship_email", `%${filters.search}%`);
     }
 
-    const { data, error } = await query
+    const { data, error } = await query;
 
     if (error) {
-      throw new Error(`Failed to fetch ships: ${error.message}`)
+      throw new Error(`Failed to fetch ships: ${error.message}`);
     }
 
-    return data || []
+    return data || [];
   }
 
   /**
@@ -70,7 +72,7 @@ export class OptimizedShipService {
     // If no vesselfinder URL, return basic data
     if (!ship.vesselfinder_url) {
       const basicData = {
-        shipName: this.generateShipNameFromEmail(ship.ship_email)
+        shipName: this.generateShipNameFromEmail(ship.ship_email),
       };
       shipCache.set(ship.id, basicData, 10 * 60 * 1000); // Cache for 10 minutes
       return basicData;
@@ -78,7 +80,7 @@ export class OptimizedShipService {
 
     try {
       const trackingData = await shipTrackingService.getAllShipDataFromURL(ship.vesselfinder_url);
-      
+
       const result = {
         location: trackingData.location || undefined,
         imageUrl: trackingData.image?.url,
@@ -91,10 +93,10 @@ export class OptimizedShipService {
       return result;
     } catch (error) {
       console.error(`Error fetching tracking data for ship ${ship.ship_email}:`, error);
-      
+
       // Cache error state to avoid repeated failures
       const errorData = {
-        shipName: this.generateShipNameFromEmail(ship.ship_email)
+        shipName: this.generateShipNameFromEmail(ship.ship_email),
       };
       shipCache.set(ship.id, errorData, 2 * 60 * 1000); // Cache errors for 2 minutes
       return errorData;
@@ -105,22 +107,20 @@ export class OptimizedShipService {
    * Preload tracking data for multiple ships in batches
    */
   async preloadShipTrackingData(ships: Ship[], batchSize: number = 3): Promise<void> {
-    const shipsToLoad = ships.filter(ship => !shipCache.has(ship.id));
-    
+    const shipsToLoad = ships.filter((ship) => !shipCache.has(ship.id));
+
     if (shipsToLoad.length === 0) return;
 
     // Process ships in batches to avoid overwhelming the server
     for (let i = 0; i < shipsToLoad.length; i += batchSize) {
       const batch = shipsToLoad.slice(i, i + batchSize);
-      
+
       // Load batch concurrently but limit concurrency
-      await Promise.allSettled(
-        batch.map(ship => this.getShipTrackingData(ship))
-      );
+      await Promise.allSettled(batch.map((ship) => this.getShipTrackingData(ship)));
 
       // Small delay between batches
       if (i + batchSize < shipsToLoad.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
     }
   }
@@ -140,7 +140,7 @@ export class OptimizedShipService {
     return {
       ships,
       getCachedTrackingData: (ship: Ship) => shipCache.get(ship.id),
-      loadTrackingData: (ship: Ship) => this.getShipTrackingData(ship)
+      loadTrackingData: (ship: Ship) => this.getShipTrackingData(ship),
     };
   }
 
