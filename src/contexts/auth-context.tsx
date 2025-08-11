@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/client";
 import type { AuthContextType, AuthUser, Profile } from "@/types/auth";
 
@@ -13,6 +15,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
   const router = useRouter();
+
+  const fetchProfile = useCallback(
+    async (userId: string) => {
+      try {
+        const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+
+        if (error && error.code !== "PGRST116") {
+          console.error("Error fetching profile:", error);
+          return;
+        }
+
+        if (data) {
+          setProfile(data);
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    },
+    [supabase],
+  );
 
   useEffect(() => {
     // Get initial session
@@ -45,78 +67,69 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, [supabase.auth, fetchProfile]);
 
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  const signIn = useCallback(
+    async (email: string, password: string) => {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-      if (error && error.code !== "PGRST116") {
-        console.error("Error fetching profile:", error);
-        return;
+      if (!error) {
+        router.push("/dashboard");
       }
 
-      if (data) {
-        setProfile(data);
-      }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  };
+      return { error };
+    },
+    [supabase.auth, router],
+  );
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (!error) {
-      router.push("/dashboard");
-    }
-
-    return { error };
-  };
-
-  const signUp = async (email: string, password: string, fullName?: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+  const signUp = useCallback(
+    async (email: string, password: string, fullName?: string) => {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
         },
-      },
-    });
+      });
 
-    return { error };
-  };
+      return { error };
+    },
+    [supabase.auth],
+  );
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     await supabase.auth.signOut();
     router.push("/auth/v1/login");
-  };
+  }, [supabase.auth, router]);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin}/auth/callback`,
       },
     });
 
     return { error };
-  };
+  }, [supabase.auth]);
 
-  const value = {
-    user,
-    profile,
-    loading,
-    signIn,
-    signUp,
-    signOut,
-    signInWithGoogle,
-  };
-
+  const value = useMemo(
+    () => ({
+      user,
+      profile,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+      signInWithGoogle,
+    }),
+    [user, profile, loading, signIn, signUp, signOut, signInWithGoogle],
+  );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
