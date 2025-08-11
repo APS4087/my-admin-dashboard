@@ -11,7 +11,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/auth-context";
-import { getAllUsers, approveUser, unapproveUser, getPendingUsers } from "@/lib/admin-utils";
+import {
+  getAllUsersAction,
+  approveUserAction,
+  unapproveUserAction,
+  getPendingUsersAction,
+} from "@/server/admin-actions";
 import type { Profile } from "@/types/auth";
 
 const formatDate = (dateString: string) => {
@@ -89,7 +94,7 @@ const UserRow = ({
 );
 
 export default function UserApprovalPage() {
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const [allUsers, setAllUsers] = useState<Profile[]>([]);
   const [pendingUsers, setPendingUsers] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -100,7 +105,44 @@ export default function UserApprovalPage() {
 
   const loadData = async () => {
     try {
-      const [allUsersData, pendingUsersData] = await Promise.all([getAllUsers(), getPendingUsers()]);
+      console.log("🔍 Starting to load user data...");
+
+      const [allUsersData, pendingUsersData] = await Promise.all([getAllUsersAction(), getPendingUsersAction()]);
+
+      // Debug logging
+      console.log("📊 All users data:", allUsersData);
+      console.log("📊 All users count:", allUsersData?.length || 0);
+      console.log(
+        "📊 All users details:",
+        allUsersData?.map((u) => ({
+          id: u.id,
+          email: u.email,
+          role: u.role,
+          approved: u.approved,
+          created_at: u.created_at,
+        })),
+      );
+
+      console.log("⏳ Pending users data:", pendingUsersData);
+      console.log("⏳ Pending users count:", pendingUsersData?.length || 0);
+      console.log(
+        "⏳ Pending users details:",
+        pendingUsersData?.map((u) => ({
+          id: u.id,
+          email: u.email,
+          role: u.role,
+          approved: u.approved,
+          created_at: u.created_at,
+        })),
+      );
+
+      console.log("📈 Stats:", {
+        totalUsers: allUsersData?.length || 0,
+        pendingUsers: pendingUsersData?.length || 0,
+        approvedUsers: allUsersData?.filter((u) => u.approved).length || 0,
+        admins: allUsersData?.filter((u) => u.role === "admin" || u.role === "administrator").length || 0,
+      });
+
       setAllUsers(allUsersData ?? []);
       setPendingUsers(pendingUsersData ?? []);
     } catch (error) {
@@ -112,17 +154,17 @@ export default function UserApprovalPage() {
   };
 
   useEffect(() => {
-    if (isAdmin) {
+    if (!authLoading && isAdmin) {
       loadData();
-    } else {
+    } else if (!authLoading) {
       setLoading(false);
     }
-  }, [isAdmin]);
+  }, [isAdmin, authLoading]);
 
   const handleApproveUser = async (userId: string) => {
     setActionLoading(userId);
     try {
-      await approveUser(userId);
+      await approveUserAction(userId);
       toast.success("User approved successfully");
       await loadData();
     } catch (error) {
@@ -136,7 +178,7 @@ export default function UserApprovalPage() {
   const handleUnapproveUser = async (userId: string) => {
     setActionLoading(userId);
     try {
-      await unapproveUser(userId);
+      await unapproveUserAction(userId);
       toast.success("User approval revoked");
       await loadData();
     } catch (error) {
@@ -146,6 +188,14 @@ export default function UserApprovalPage() {
       setActionLoading(null);
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-96 items-center justify-center">
+        <RefreshCw className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (
